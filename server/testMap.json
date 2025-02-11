@@ -1,0 +1,51 @@
+{
+  "nodes": [
+    {
+      "id": "A1",
+      "name": "Main Entrance",
+      "coordinates": { "x": 0, "y": 0 },
+      "type": "entrance"
+    },
+    {
+      "id": "B2",
+      "name": "Reception Desk",
+      "coordinates": { "x": 10, "y": 5 }
+    },
+    {
+      "id": "C3",
+      "name": "Library Stairs",
+      "coordinates": { "x": 20, "y": 15 }
+    },
+    {
+      "id": "D4",
+      "name": "Cafeteria",
+      "coordinates": { "x": 5, "y": 20 }
+    }
+  ],
+  "edges": [
+    {
+      "from": "A1",
+      "to": "B2",
+      "distance": 15,
+      "direction": "north"
+    },
+    {
+      "from": "B2",
+      "to": "C3",
+      "distance": 25,
+      "direction": "northeast"
+    },
+    {
+      "from": "B2",
+      "to": "D4",
+      "distance": 18,
+      "direction": "west"
+    },
+    {
+      "from": "D4",
+      "to": "C3",
+      "distance": 30,
+      "direction": "east"
+    }
+  ]
+}
