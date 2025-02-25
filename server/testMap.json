@@ -1,51 +1,39 @@
 {
   "nodes": [
-    {
-      "id": "A1",
-      "name": "Main Entrance",
-      "coordinates": { "x": 0, "y": 0 },
-      "type": "entrance"
-    },
-    {
-      "id": "B2",
-      "name": "Reception Desk",
-      "coordinates": { "x": 10, "y": 5 }
-    },
-    {
-      "id": "C3",
-      "name": "Library Stairs",
-      "coordinates": { "x": 20, "y": 15 }
-    },
-    {
-      "id": "D4",
-      "name": "Cafeteria",
-      "coordinates": { "x": 5, "y": 20 }
-    }
+    { "id": "A1", "name": "Entrance (Dunsmuir St)", "coordinates": { "x": 0, "y": 0 }, "type": "entrance" },
+    { "id": "B2", "name": "Bookstore (249)", "coordinates": { "x": -3, "y": 0 } },
+    { "id": "C3", "name": "Security", "coordinates": { "x": 0, "y": 5 } },
+    { "id": "D4", "name": "Library (242)", "coordinates": { "x": 4, "y": 5 } },
+    { "id": "E5", "name": "Corridor Node 1", "coordinates": { "x": 4, "y": 9 } },
+    { "id": "F6", "name": "214", "coordinates": { "x": 2, "y": 9 } },
+    { "id": "G7", "name": "216", "coordinates": { "x": 6, "y": 9 } },
+    { "id": "H8", "name": "Corridor Node 2", "coordinates": { "x": 4, "y": 15 } },
+    { "id": "I9", "name": "220", "coordinates": { "x": 2, "y": 15 } },
+    { "id": "J10", "name": "222", "coordinates": { "x": 6, "y": 15 } },
+    { "id": "K11", "name": "Corridor Node 3", "coordinates": { "x": 4, "y": 20 } },
+    { "id": "L12", "name": "226", "coordinates": { "x": 2, "y": 20 } },
+    { "id": "M13", "name": "228", "coordinates": { "x": 6, "y": 20 } },
+    { "id": "N14", "name": "Corridor Node 4", "coordinates": { "x": 4, "y": 25 } },
+    { "id": "O15", "name": "232", "coordinates": { "x": 2, "y": 25 } },
+    { "id": "P16", "name": "234", "coordinates": { "x": 6, "y": 25 } },
+    { "id": "Q17", "name": "ST2C", "coordinates": { "x": 8, "y": 25 } }
   ],
   "edges": [
-    {
-      "from": "A1",
-      "to": "B2",
-      "distance": 15,
-      "direction": "north"
-    },
-    {
-      "from": "B2",
-      "to": "C3",
-      "distance": 25,
-      "direction": "northeast"
-    },
-    {
-      "from": "B2",
-      "to": "D4",
-      "distance": 18,
-      "direction": "west"
-    },
-    {
-      "from": "D4",
-      "to": "C3",
-      "distance": 30,
-      "direction": "east"
-    }
+    { "from": "A1", "to": "B2", "distance": 3, "direction": "West" },
+    { "from": "B2", "to": "C3", "distance": 5, "direction": "North" },
+    { "from": "C3", "to": "D4", "distance": 4, "direction": "East" },
+    { "from": "D4", "to": "E5", "distance": 4, "direction": "North" },
+    { "from": "E5", "to": "F6", "distance": 2, "direction": "West" },
+    { "from": "E5", "to": "G7", "distance": 2, "direction": "East" },
+    { "from": "E5", "to": "H8", "distance": 6, "direction": "North" },
+    { "from": "H8", "to": "I9", "distance": 2, "direction": "West" },
+    { "from": "H8", "to": "J10", "distance": 2, "direction": "East" },
+    { "from": "H8", "to": "K11", "distance": 5, "direction": "North" },
+    { "from": "K11", "to": "L12", "distance": 2, "direction": "West" },
+    { "from": "K11", "to": "M13", "distance": 2, "direction": "East" },
+    { "from": "K11", "to": "N14", "distance": 5, "direction": "North" },
+    { "from": "N14", "to": "O15", "distance": 2, "direction": "West" },
+    { "from": "N14", "to": "P16", "distance": 2, "direction": "East" },
+    { "from": "N14", "to": "Q17", "distance": 4, "direction": "East" }
   ]
 }
