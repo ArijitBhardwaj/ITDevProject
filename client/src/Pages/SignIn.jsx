@@ -1,7 +1,6 @@
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useState } from "react";
 import { auth } from "../firebaseConfig";
-import SignUp from "./SignUp";
 import { Link } from "react-router-dom";
 import {
   Box,
@@ -28,7 +27,7 @@ const SignIn = () => {
   const handleSignIn = async (e) => {
     e.preventDefault();
     try {
-      const userCredential = signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log("User signed in: ", userCredential.user);
       setEmail("");
       setPassword("");
@@ -39,12 +38,24 @@ const SignIn = () => {
     }
   };
 
+  const handleClickShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
 
-  const handleClickShowPassword = () => {
-    setShowPassword((prev) => !prev);
+  const handleGoogleSignIn = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      console.log("User signed in with Google:", result.user);
+      setError("");
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+      setError(error.message);
+    }
   };
 
   return (
@@ -75,14 +86,8 @@ const SignIn = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <FormControl
-              variant="outlined"
-              fullWidth
-              sx={{ mt: 2, bgcolor: "#fafafa" }}
-            >
-              <InputLabel htmlFor="outlined-adornment-password">
-                Password
-              </InputLabel>
+            <FormControl variant="outlined" fullWidth sx={{ mt: 2, bgcolor: "#fafafa" }}>
+              <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
               <OutlinedInput
                 id="outlined-adornment-password"
                 type={showPassword ? "text" : "password"}
@@ -95,9 +100,7 @@ const SignIn = () => {
                       onClick={handleClickShowPassword}
                       onMouseDown={handleMouseDownPassword}
                       edge="end"
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
@@ -115,15 +118,27 @@ const SignIn = () => {
               type="submit"
               variant="contained"
               fullWidth
-              sx={{
-                mt: 1,
-                bgcolor: "#212121",
-                ":hover": { bgcolor: "#9e9e9e" }
-              }}
+              sx={{ mt: 1, bgcolor: "#212121", ":hover": { bgcolor: "#9e9e9e" } }}
             >
               Sign In
             </Button>
           </Box>
+          <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+            Or sign in with:
+          </Typography>
+          <Button
+            variant="outlined"
+            fullWidth
+            onClick={handleGoogleSignIn}
+            sx={{ mt: 1 }}
+          >
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
+              alt="Google Logo"
+              style={{ width: 20, height: 20, marginRight: 8 }}
+            />
+            Sign In with Google
+          </Button>
           <Typography variant="body2" align="center" sx={{ mt: 2 }}>
             Don't have an account? <Link to="/">Sign Up</Link>
           </Typography>
