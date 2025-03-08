@@ -2,7 +2,7 @@ import { React, useState } from "react";
 import { Link } from "react-router-dom";
 import {createUserWithEmailAndPassword} from "firebase/auth";
 import { auth } from "../firebaseConfig";
-import { Box } from "@mui/material";
+import { Box, Card, CardContent, TextField, Typography, Button } from "@mui/material";
 import SignIn from "./SignIn";
 
 const SignUp = () => {
@@ -33,34 +33,63 @@ const SignUp = () => {
       };
 
         return(
-            <Box>
-                <h2>Sign Up</h2>
-                <form onSubmit={handleSignUp}>
-                    <div>
-                        <label>Email</label>
-                        <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Enter your email here"
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Password</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter your password here"
-                        required
-                    />
-                </div>
-                {error && <p style={{ color: "red" }}>{error}</p>}
-                <button type="submit">Sign Up</button>
-            </form>
-            <Link to="/signin">Already have an account? SignIn</Link>
-        </Box>
+            <Box sx={{
+              minHeight: "100vh",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              bgcolor: "#eeeeee",
+              p: 2,
+            }}>
+              <Card sx={{ maxWidth: 400, width: "100%" }}>
+                <CardContent>
+                  <Typography variant="h5" align="center" gutterBottom> Sign Up</Typography>
+
+                  {error && (
+                    <Alert severity="error" sx={{ mt: 1 }}>
+                      {error}
+                    </Alert>
+                  )}
+                  <Box component="form" onSubmit={handleSignUp} sx={{mt: 2}}>
+                    <TextField
+                    sx={{mt: 1, bgcolor:"#fafafa"}}
+                    label= "Email"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                    required
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}>
+                    </TextField>
+
+                    <TextField
+                    sx={{mt: 1, bgcolor:"#fafafa"}}
+                    label= "Password"
+                    variant="outlined"
+                    fullWidth
+                    margin="normal"
+                    required
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    >
+                    </TextField>
+
+                    <Button
+                    type="submit"
+                    variant="contained"
+                    fullWidth
+                    sx={{mt: 1, bgcolor:"#212121" }}>Sign Up</Button>
+
+                  </Box>
+                    
+                    <Typography variant="body2" align="center" sx= {{mt: 2}}>Already have an account?{""}
+                    <Link to="/signin"> Sign In</Link>
+                    </Typography>
+                </CardContent>
+              </Card>
+            </Box>
     );
 };
 
