@@ -66,13 +66,20 @@ const SignIn = () => {
         alignItems: "center",
         justifyContent: "center",
         bgcolor: "#eeeeee",
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url("https://as1.ftcdn.net/v2/jpg/01/43/67/38/1000_F_143673890_LYWPkrlhHBjqg3fUHRGn4Iw7szis4SCF.jpg")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         p: 2
       }}
     >
-      <Card sx={{ maxWidth: 500, width: "100%" }}>
-        <CardContent>
+      <Card sx={{ maxWidth: 500,
+          width: "100%",
+          borderRadius: "16px",
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)" }}>
+        <CardContent sx={{ p: 4 }}>
           <Typography variant="h5" align="center" gutterBottom>
-            Sign In
+            SIGN IN
           </Typography>
           <Box component="form" onSubmit={handleSignIn} sx={{ mt: 2 }}>
             <TextField
@@ -118,7 +125,11 @@ const SignIn = () => {
               type="submit"
               variant="contained"
               fullWidth
-              sx={{ mt: 1, bgcolor: "#212121", ":hover": { bgcolor: "#9e9e9e" } }}
+              sx={{
+                mt: 3,
+                bgcolor: "#008080",
+                ":hover": { bgcolor: "#006666" }
+              }}
             >
               Sign In
             </Button>
