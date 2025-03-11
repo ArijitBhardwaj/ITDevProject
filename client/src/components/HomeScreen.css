@@ -1,0 +1,31 @@
+.home-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100vh;
+    background-size: cover;
+    background-position: center;
+    padding: 1.5rem;
+  }
+  
+  .button-container {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 2.5rem;
+  }
+  
+  .get-started-button {
+    background-color: #d1d5db; /* Gray-300 */
+    color: black;
+    padding: 1rem 2.5rem;
+    font-size: 1.125rem; /* text-lg */
+    font-weight: 600;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease-in-out;
+  }
+  
+  .get-started-button:hover {
+    background-color: #9ca3af; /* Gray-400 */
+  }
+  
