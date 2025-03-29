@@ -52,7 +52,7 @@ const HomePage = () => {
           onMouseLeave={(e) =>
             (e.target.style.backgroundColor = buttonStyle.backgroundColor)
           }
-          onClick={() => navigate("/get-started")}
+          onClick={() => navigate("/signin")}
         >
           Get Started
         </button>

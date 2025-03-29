@@ -1,4 +1,8 @@
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from "firebase/auth";
 import { useState } from "react";
 import { auth } from "../firebaseConfig";
 import { Link } from "react-router-dom";
@@ -14,7 +18,7 @@ import {
   OutlinedInput,
   InputAdornment,
   IconButton,
-  Alert
+  Alert,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
@@ -27,7 +31,11 @@ const SignIn = () => {
   const handleSignIn = async (e) => {
     e.preventDefault();
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       console.log("User signed in: ", userCredential.user);
       setEmail("");
       setPassword("");
@@ -70,13 +78,17 @@ const SignIn = () => {
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
-        p: 2
+        p: 2,
       }}
     >
-      <Card sx={{ maxWidth: 500,
+      <Card
+        sx={{
+          maxWidth: 500,
           width: "100%",
           borderRadius: "16px",
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)" }}>
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+        }}
+      >
         <CardContent sx={{ p: 4 }}>
           <Typography variant="h5" align="center" gutterBottom>
             SIGN IN
@@ -93,8 +105,14 @@ const SignIn = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <FormControl variant="outlined" fullWidth sx={{ mt: 2, bgcolor: "#fafafa" }}>
-              <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+            <FormControl
+              variant="outlined"
+              fullWidth
+              sx={{ mt: 2, bgcolor: "#fafafa" }}
+            >
+              <InputLabel htmlFor="outlined-adornment-password">
+                Password
+              </InputLabel>
               <OutlinedInput
                 id="outlined-adornment-password"
                 type={showPassword ? "text" : "password"}
@@ -107,7 +125,9 @@ const SignIn = () => {
                       onClick={handleClickShowPassword}
                       onMouseDown={handleMouseDownPassword}
                       edge="end"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
@@ -128,7 +148,7 @@ const SignIn = () => {
               sx={{
                 mt: 3,
                 bgcolor: "#008080",
-                ":hover": { bgcolor: "#006666" }
+                ":hover": { bgcolor: "#006666" },
               }}
             >
               Sign In
@@ -151,7 +171,7 @@ const SignIn = () => {
             Sign In with Google
           </Button>
           <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-            Don't have an account? <Link to="/">Sign Up</Link>
+            Don't have an account? <Link to="/signup">Sign Up</Link>
           </Typography>
         </CardContent>
       </Card>
