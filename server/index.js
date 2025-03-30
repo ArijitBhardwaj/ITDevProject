@@ -1,3 +1,4 @@
+// index.js
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
@@ -10,7 +11,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "http://192.168.1.67:5173", // Add your laptop's IP
+      "http://192.168.1.67:5173", // Add your laptop's IP if needed
     ],
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"],
@@ -19,23 +20,26 @@ app.use(
 
 app.use(express.json());
 
-// Routes
+// Existing Navigation Routes
 const navigationRoutes = require("./routes/navigationRoutes");
 app.use("/api/navigation", navigationRoutes);
 
-// Health check endpoint
+// NEW: Neo4j Routes
+const neo4jRoutes = require("./routes/neo4jRoutes");
+app.use("/api/neo4j", neo4jRoutes);
+
+// Health Check Endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "OK", timestamp: new Date() });
 });
 
-// Start server with explicit host binding
+// Start Server
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running at:
   - Local: http://localhost:${PORT}
   - Network: http://${getLocalIP()}:${PORT}`);
 });
 
-// Helper to get local IP
 function getLocalIP() {
   const interfaces = require("os").networkInterfaces();
   for (const name of Object.keys(interfaces)) {
