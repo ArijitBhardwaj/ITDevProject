@@ -1,0 +1,26 @@
+[
+    {
+        "id": "C",
+        "coordinates": {
+            "x": 0,
+            "y": 0
+        },
+        "type": "reference"
+    },
+    {
+        "id": "S",
+        "coordinates": {
+            "x": -5.5,
+            "y": -9
+        },
+        "type": "reference"
+    },
+    {
+        "id": "E",
+        "coordinates": {
+            "x": 0,
+            "y": 9
+        },
+        "type": "reference"
+    }
+]
