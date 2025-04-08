@@ -1,0 +1,122 @@
+[
+    {
+        "id": "204D",
+        "coordinates": {
+            "x": 4,
+            "y": 0.6
+        },
+        "type": "washroom"
+    },
+    {
+        "id": "204K",
+        "coordinates": {
+            "x": 1.1,
+            "y": 0.4
+        },
+        "type": "washroom"
+    },
+    {
+        "id": "210A",
+        "coordinates": {
+            "x": 7,
+            "y": 0.3
+        },
+        "type": "washroom"
+    },
+    {
+        "id": "210B",
+        "coordinates": {
+            "x": 6.5,
+            "y": 0
+        },
+        "type": "washroom"
+    },
+    {
+        "id": "200P",
+        "coordinates": {
+            "x": 3,
+            "y": 11.3
+        },
+        "type": "washroom"
+    },
+    {
+        "id": "200Q",
+        "coordinates": {
+            "x": 2,
+            "y": 11.3
+        },
+        "type": "washroom"
+    },
+    {
+        "id": "243",
+        "coordinates": {
+            "x": 5.5,
+            "y": -9
+        },
+        "type": "washroom"
+    },
+    {
+        "id": "219A",
+        "coordinates": {
+            "x": -2,
+            "y": 9.5
+        },
+        "type": "washroom"
+    },
+    {
+        "id": "219B",
+        "coordinates": {
+            "x": -1,
+            "y": 9.5
+        },
+        "type": "washroom"
+    },
+    {
+        "id": "219C",
+        "coordinates": {
+            "x": -1,
+            "y": 10.5
+        },
+        "type": "washroom"
+    },
+    {
+        "id": "242L",
+        "coordinates": {
+            "x": 2.5,
+            "y": -1.5
+        },
+        "type": "washroom"
+    },
+    {
+        "id": "242M",
+        "coordinates": {
+            "x": 2.5,
+            "y": -2
+        },
+        "type": "washroom"
+    },
+    {
+        "id": "231",
+        "coordinates": {
+            "x": 5,
+            "y": -9.5
+        },
+        "type": "washroom"
+    },
+    {
+        "id": "230",
+        "coordinates": {
+            "x": 5,
+            "y": -11
+        },
+        "type": "washroom"
+    },
+    {
+        "id": "240B",
+        "coordinates": {
+            "x": 6.7,
+            "y": -1.7
+        },
+        "type": "washroom"
+    }
+]

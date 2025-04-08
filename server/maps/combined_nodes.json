@@ -1,0 +1,1718 @@
+[
+  {
+    "id": "ELCA",
+    "coordinates": {
+      "x": -2.6,
+      "y": -11.8
+    },
+    "type": "elevator"
+  },
+  {
+    "id": "ELCB",
+    "coordinates": {
+      "x": -4,
+      "y": -6
+    },
+    "type": "elevator"
+  },
+  {
+    "id": "ELCC",
+    "coordinates": {
+      "x": -4,
+      "y": -5.5
+    },
+    "type": "elevator"
+  },
+  {
+    "id": "ELCD",
+    "coordinates": {
+      "x": -4,
+      "y": -5
+    },
+    "type": "elevator"
+  },
+  {
+    "id": "ELCE",
+    "coordinates": {
+      "x": -3.5,
+      "y": 12
+    },
+    "type": "elevator"
+  },
+
+  {
+    "id": "Entrance",
+    "coordinates": {
+      "x": -5.5,
+      "y": -9
+    },
+    "type": "landmark"
+  },
+  {
+    "id": "Library",
+    "coordinates": {
+      "x": 3,
+      "y": -5
+    },
+    "type": "landmark"
+  },
+  {
+    "id": "Security",
+    "coordinates": {
+      "x": -1.5,
+      "y": -2.5
+    },
+    "type": "landmark"
+  },
+  {
+    "id": "Cafe",
+    "coordinates": {
+      "x": -6.5,
+      "y": -8
+    },
+    "type": "landmark"
+  },
+
+  {
+    "id": "C",
+    "coordinates": {
+      "x": 0,
+      "y": 0
+    },
+    "type": "reference"
+  },
+  {
+    "id": "S",
+    "coordinates": {
+      "x": -5.5,
+      "y": -9
+    },
+    "type": "reference"
+  },
+  {
+    "id": "E",
+    "coordinates": {
+      "x": 0,
+      "y": 9
+    },
+    "type": "reference"
+  },
+
+  {
+    "id": "STR2A",
+    "coordinates": {
+      "x": 6,
+      "y": 12
+    },
+    "type": "stairs"
+  },
+  {
+    "id": "STR2B",
+    "coordinates": {
+      "x": -5,
+      "y": 12
+    },
+    "type": "stairs"
+  },
+  {
+    "id": "STR2C",
+    "coordinates": {
+      "x": 0,
+      "y": 9
+    },
+    "type": "stairs"
+  },
+  {
+    "id": "STR2D",
+    "coordinates": {
+      "x": -6,
+      "y": 0
+    },
+    "type": "stairs"
+  },
+  {
+    "id": "STR2E",
+    "coordinates": {
+      "x": 7,
+      "y": -0.5
+    },
+    "type": "stairs"
+  },
+  {
+    "id": "STR2F",
+    "coordinates": {
+      "x": -5,
+      "y": -5
+    },
+    "type": "stairs"
+  },
+  {
+    "id": "STR2G",
+    "coordinates": {
+      "x": -5,
+      "y": -6
+    },
+    "type": "stairs"
+  },
+  {
+    "id": "STR2J",
+    "coordinates": {
+      "x": 7.6,
+      "y": -11.5
+    },
+    "type": "stairs"
+  },
+  {
+    "id": "STR2L",
+    "coordinates": {
+      "x": -2.6,
+      "y": -10
+    },
+    "type": "stairs"
+  },
+
+  {
+    "id": "G7",
+    "coordinates": {
+      "x": -3.88,
+      "y": -17.97
+    }
+  },
+  {
+    "id": "G13",
+    "coordinates": {
+      "x": -2.39,
+      "y": -17.9
+    }
+  },
+  {
+    "id": "G47",
+    "coordinates": {
+      "x": -10.91,
+      "y": -15.72
+    }
+  },
+  {
+    "id": "G60",
+    "coordinates": {
+      "x": -1.98,
+      "y": -15.34
+    }
+  },
+  {
+    "id": "G65",
+    "coordinates": {
+      "x": -0.48,
+      "y": -15.24
+    }
+  },
+  {
+    "id": "G67",
+    "coordinates": {
+      "x": 0.95,
+      "y": -15.29
+    }
+  },
+  {
+    "id": "G73",
+    "coordinates": {
+      "x": 0.95,
+      "y": -15.11
+    }
+  },
+  {
+    "id": "G88",
+    "coordinates": {
+      "x": -12.92,
+      "y": -14.18
+    }
+  },
+  {
+    "id": "G109",
+    "coordinates": {
+      "x": -9.52,
+      "y": -12.58
+    }
+  },
+  {
+    "id": "G117",
+    "coordinates": {
+      "x": 0.26,
+      "y": -12.23
+    }
+  },
+  {
+    "id": "G118",
+    "coordinates": {
+      "x": -0.59,
+      "y": -12.23
+    }
+  },
+  {
+    "id": "G119",
+    "coordinates": {
+      "x": 1.04,
+      "y": -11.82
+    }
+  },
+  {
+    "id": "G120",
+    "coordinates": {
+      "x": -1.73,
+      "y": -12.03
+    }
+  },
+  {
+    "id": "G121",
+    "coordinates": {
+      "x": 4.91,
+      "y": -11.37
+    }
+  },
+  {
+    "id": "G122",
+    "coordinates": {
+      "x": 4.16,
+      "y": -11.37
+    }
+  },
+  {
+    "id": "G123",
+    "coordinates": {
+      "x": 3.28,
+      "y": -11.37
+    }
+  },
+  {
+    "id": "G124",
+    "coordinates": {
+      "x": 2.31,
+      "y": -11.37
+    }
+  },
+  {
+    "id": "G125",
+    "coordinates": {
+      "x": 1.34,
+      "y": -11.37
+    }
+  },
+  {
+    "id": "G127",
+    "coordinates": {
+      "x": -3.44,
+      "y": -11.16
+    }
+  },
+  {
+    "id": "G128",
+    "coordinates": {
+      "x": -1.92,
+      "y": -11.11
+    }
+  },
+  {
+    "id": "G129",
+    "coordinates": {
+      "x": -2.53,
+      "y": -11.16
+    }
+  },
+  {
+    "id": "G130",
+    "coordinates": {
+      "x": 6.04,
+      "y": -11.24
+    }
+  },
+  {
+    "id": "G131",
+    "coordinates": {
+      "x": 5.49,
+      "y": -10.91
+    }
+  },
+  {
+    "id": "G133",
+    "coordinates": {
+      "x": 5.79,
+      "y": -10.15
+    }
+  },
+  {
+    "id": "G134",
+    "coordinates": {
+      "x": 5.49,
+      "y": -10.15
+    }
+  },
+  {
+    "id": "G135",
+    "coordinates": {
+      "x": -1.89,
+      "y": -10.1
+    }
+  },
+  {
+    "id": "G136",
+    "coordinates": {
+      "x": -1.89,
+      "y": -9.57
+    }
+  },
+  {
+    "id": "G137",
+    "coordinates": {
+      "x": 5.49,
+      "y": -9.49
+    }
+  },
+  {
+    "id": "G138",
+    "coordinates": {
+      "x": 5.76,
+      "y": -9.42
+    }
+  },
+  {
+    "id": "G139",
+    "coordinates": {
+      "x": -1.89,
+      "y": -9.06
+    }
+  },
+  {
+    "id": "G140",
+    "coordinates": {
+      "x": -2.53,
+      "y": -9.06
+    }
+  },
+  {
+    "id": "G141",
+    "coordinates": {
+      "x": -3.5,
+      "y": -9.06
+    }
+  },
+  {
+    "id": "G142",
+    "coordinates": {
+      "x": -4.46,
+      "y": -9.04
+    }
+  },
+  {
+    "id": "G144",
+    "coordinates": {
+      "x": 5.76,
+      "y": -8.2
+    }
+  },
+  {
+    "id": "G145",
+    "coordinates": {
+      "x": 5.46,
+      "y": -8.2
+    }
+  },
+  {
+    "id": "G146",
+    "coordinates": {
+      "x": 0.12,
+      "y": -8.25
+    }
+  },
+  {
+    "id": "G147",
+    "coordinates": {
+      "x": -0.59,
+      "y": -8.25
+    }
+  },
+  {
+    "id": "G148",
+    "coordinates": {
+      "x": -1.62,
+      "y": -8.28
+    }
+  },
+  {
+    "id": "G149",
+    "coordinates": {
+      "x": -2.53,
+      "y": -8.38
+    }
+  },
+  {
+    "id": "G150",
+    "coordinates": {
+      "x": -3.5,
+      "y": -8.38
+    }
+  },
+  {
+    "id": "G151",
+    "coordinates": {
+      "x": -4.46,
+      "y": -8.43
+    }
+  },
+  {
+    "id": "G152",
+    "coordinates": {
+      "x": -5.38,
+      "y": -8.3
+    }
+  },
+  {
+    "id": "G153",
+    "coordinates": {
+      "x": -4.46,
+      "y": -7.82
+    }
+  },
+  {
+    "id": "G164",
+    "coordinates": {
+      "x": -3.44,
+      "y": -7.77
+    }
+  },
+  {
+    "id": "G165",
+    "coordinates": {
+      "x": 6.07,
+      "y": -7.47
+    }
+  },
+  {
+    "id": "G166",
+    "coordinates": {
+      "x": 5.43,
+      "y": -7.49
+    }
+  },
+  {
+    "id": "G167",
+    "coordinates": {
+      "x": 0.12,
+      "y": -7.49
+    }
+  },
+  {
+    "id": "G168",
+    "coordinates": {
+      "x": -0.59,
+      "y": -7.49
+    }
+  },
+  {
+    "id": "G169",
+    "coordinates": {
+      "x": -1.51,
+      "y": -7.52
+    }
+  },
+  {
+    "id": "G170",
+    "coordinates": {
+      "x": -2.61,
+      "y": -7.54
+    }
+  },
+  {
+    "id": "G171",
+    "coordinates": {
+      "x": -3.72,
+      "y": -7.22
+    }
+  },
+  {
+    "id": "G172",
+    "coordinates": {
+      "x": -4.49,
+      "y": -7.22
+    }
+  },
+  {
+    "id": "G173",
+    "coordinates": {
+      "x": -5.38,
+      "y": -7.47
+    }
+  },
+  {
+    "id": "G176",
+    "coordinates": {
+      "x": -5.29,
+      "y": -6.84
+    }
+  },
+  {
+    "id": "G177",
+    "coordinates": {
+      "x": -3.88,
+      "y": -6.81
+    }
+  },
+  {
+    "id": "G178",
+    "coordinates": {
+      "x": -4.46,
+      "y": -6.81
+    }
+  },
+  {
+    "id": "G179",
+    "coordinates": {
+      "x": 5.93,
+      "y": -6.76
+    }
+  },
+  {
+    "id": "G180",
+    "coordinates": {
+      "x": 5.49,
+      "y": -6.71
+    }
+  },
+  {
+    "id": "G181",
+    "coordinates": {
+      "x": 1.04,
+      "y": -6.28
+    }
+  },
+  {
+    "id": "G182",
+    "coordinates": {
+      "x": 0.21,
+      "y": -6.53
+    }
+  },
+  {
+    "id": "G183",
+    "coordinates": {
+      "x": -0.59,
+      "y": -6.61
+    }
+  },
+  {
+    "id": "G184",
+    "coordinates": {
+      "x": -1.56,
+      "y": -6.58
+    }
+  },
+  {
+    "id": "G185",
+    "coordinates": {
+      "x": -2.61,
+      "y": -6.61
+    }
+  },
+  {
+    "id": "G186",
+    "coordinates": {
+      "x": -3.33,
+      "y": -6.46
+    }
+  },
+  {
+    "id": "G188",
+    "coordinates": {
+      "x": 5.76,
+      "y": -5.72
+    }
+  },
+  {
+    "id": "G189",
+    "coordinates": {
+      "x": 5.6,
+      "y": -5.72
+    }
+  },
+  {
+    "id": "G190",
+    "coordinates": {
+      "x": 1.04,
+      "y": -5.7
+    }
+  },
+  {
+    "id": "G191",
+    "coordinates": {
+      "x": 0.37,
+      "y": -5.72
+    }
+  },
+  {
+    "id": "G192",
+    "coordinates": {
+      "x": -0.59,
+      "y": -5.72
+    }
+  },
+  {
+    "id": "G193",
+    "coordinates": {
+      "x": -2.56,
+      "y": -5.59
+    }
+  },
+  {
+    "id": "G194",
+    "coordinates": {
+      "x": -3.39,
+      "y": -5.72
+    }
+  },
+  {
+    "id": "G195",
+    "coordinates": {
+      "x": -1.56,
+      "y": -5.7
+    }
+  },
+  {
+    "id": "G197",
+    "coordinates": {
+      "x": 5.79,
+      "y": -4.84
+    }
+  },
+  {
+    "id": "G198",
+    "coordinates": {
+      "x": 5.6,
+      "y": -4.84
+    }
+  },
+  {
+    "id": "G199",
+    "coordinates": {
+      "x": 1.09,
+      "y": -4.84
+    }
+  },
+  {
+    "id": "G200",
+    "coordinates": {
+      "x": 0.37,
+      "y": -4.84
+    }
+  },
+  {
+    "id": "G201",
+    "coordinates": {
+      "x": -0.59,
+      "y": -4.84
+    }
+  },
+  {
+    "id": "G202",
+    "coordinates": {
+      "x": -1.56,
+      "y": -4.84
+    }
+  },
+  {
+    "id": "G203",
+    "coordinates": {
+      "x": -2.53,
+      "y": -4.86
+    }
+  },
+  {
+    "id": "G204",
+    "coordinates": {
+      "x": -3.39,
+      "y": -4.84
+    }
+  },
+  {
+    "id": "G205",
+    "coordinates": {
+      "x": 6.07,
+      "y": -3.97
+    }
+  },
+  {
+    "id": "G206",
+    "coordinates": {
+      "x": 5.6,
+      "y": -3.97
+    }
+  },
+  {
+    "id": "G207",
+    "coordinates": {
+      "x": 1.09,
+      "y": -3.95
+    }
+  },
+  {
+    "id": "G208",
+    "coordinates": {
+      "x": 0.37,
+      "y": -3.95
+    }
+  },
+  {
+    "id": "G209",
+    "coordinates": {
+      "x": -0.54,
+      "y": -3.95
+    }
+  },
+  {
+    "id": "G210",
+    "coordinates": {
+      "x": -1.53,
+      "y": -3.97
+    }
+  },
+  {
+    "id": "G212",
+    "coordinates": {
+      "x": 5.96,
+      "y": -3.24
+    }
+  },
+  {
+    "id": "G213",
+    "coordinates": {
+      "x": 5.57,
+      "y": -3.01
+    }
+  },
+  {
+    "id": "G214",
+    "coordinates": {
+      "x": 1.09,
+      "y": -3.06
+    }
+  },
+  {
+    "id": "G215",
+    "coordinates": {
+      "x": 0.37,
+      "y": -3.06
+    }
+  },
+  {
+    "id": "G216",
+    "coordinates": {
+      "x": -0.62,
+      "y": -3.06
+    }
+  },
+  {
+    "id": "G217",
+    "coordinates": {
+      "x": -1.45,
+      "y": -3.01
+    }
+  },
+  {
+    "id": "G218",
+    "coordinates": {
+      "x": -2.2,
+      "y": -2.73
+    }
+  },
+  {
+    "id": "G221",
+    "coordinates": {
+      "x": 1.09,
+      "y": -2.35
+    }
+  },
+  {
+    "id": "G222",
+    "coordinates": {
+      "x": -1.51,
+      "y": -2.18
+    }
+  },
+  {
+    "id": "G223",
+    "coordinates": {
+      "x": -2.23,
+      "y": -2.25
+    }
+  },
+  {
+    "id": "G225",
+    "coordinates": {
+      "x": 5.76,
+      "y": -2.18
+    }
+  },
+  {
+    "id": "G226",
+    "coordinates": {
+      "x": 5.6,
+      "y": -2.18
+    }
+  },
+  {
+    "id": "G227",
+    "coordinates": {
+      "x": 1.23,
+      "y": -1.82
+    }
+  },
+  {
+    "id": "G228",
+    "coordinates": {
+      "x": 0.65,
+      "y": -1.85
+    }
+  },
+  {
+    "id": "G229",
+    "coordinates": {
+      "x": 0.29,
+      "y": -2.25
+    }
+  },
+  {
+    "id": "G230",
+    "coordinates": {
+      "x": -0.51,
+      "y": -2.0
+    }
+  },
+  {
+    "id": "G231",
+    "coordinates": {
+      "x": -4.85,
+      "y": -2.05
+    }
+  },
+  {
+    "id": "G232",
+    "coordinates": {
+      "x": -5.43,
+      "y": -2.0
+    }
+  },
+  {
+    "id": "G233",
+    "coordinates": {
+      "x": 0.1,
+      "y": -1.54
+    }
+  },
+  {
+    "id": "G235",
+    "coordinates": {
+      "x": -5.74,
+      "y": -1.52
+    }
+  },
+  {
+    "id": "G236",
+    "coordinates": {
+      "x": 5.9,
+      "y": -1.47
+    }
+  },
+  {
+    "id": "G237",
+    "coordinates": {
+      "x": 5.6,
+      "y": -1.39
+    }
+  },
+  {
+    "id": "G239",
+    "coordinates": {
+      "x": 0.12,
+      "y": -0.94
+    }
+  },
+  {
+    "id": "G240",
+    "coordinates": {
+      "x": -0.59,
+      "y": -1.34
+    }
+  },
+  {
+    "id": "G241",
+    "coordinates": {
+      "x": -5.35,
+      "y": -1.11
+    }
+  },
+  {
+    "id": "G242",
+    "coordinates": {
+      "x": -2.81,
+      "y": -1.01
+    }
+  },
+  {
+    "id": "G244",
+    "coordinates": {
+      "x": 3.28,
+      "y": -0.78
+    }
+  },
+  {
+    "id": "G245",
+    "coordinates": {
+      "x": 2.25,
+      "y": -1.14
+    }
+  },
+  {
+    "id": "G246",
+    "coordinates": {
+      "x": -1.56,
+      "y": -0.76
+    }
+  },
+  {
+    "id": "G247",
+    "coordinates": {
+      "x": -2.53,
+      "y": -0.76
+    }
+  },
+  {
+    "id": "G248",
+    "coordinates": {
+      "x": -3.5,
+      "y": -0.76
+    }
+  },
+  {
+    "id": "G249",
+    "coordinates": {
+      "x": -4.27,
+      "y": -0.76
+    }
+  },
+  {
+    "id": "G251",
+    "coordinates": {
+      "x": 5.46,
+      "y": -0.41
+    }
+  },
+  {
+    "id": "G252",
+    "coordinates": {
+      "x": 0.12,
+      "y": -0.41
+    }
+  },
+  {
+    "id": "G253",
+    "coordinates": {
+      "x": -0.51,
+      "y": -0.41
+    }
+  },
+  {
+    "id": "G254",
+    "coordinates": {
+      "x": -5.4,
+      "y": -0.38
+    }
+  },
+  {
+    "id": "G255",
+    "coordinates": {
+      "x": -5.38,
+      "y": 0.3
+    }
+  },
+  {
+    "id": "G256",
+    "coordinates": {
+      "x": 5.46,
+      "y": 0.46
+    }
+  },
+  {
+    "id": "G257",
+    "coordinates": {
+      "x": 0.29,
+      "y": 0.53
+    }
+  },
+  {
+    "id": "G258",
+    "coordinates": {
+      "x": -0.51,
+      "y": 0.46
+    }
+  },
+  {
+    "id": "G259",
+    "coordinates": {
+      "x": 5.46,
+      "y": 1.34
+    }
+  },
+  {
+    "id": "G260",
+    "coordinates": {
+      "x": 0.35,
+      "y": 1.34
+    }
+  },
+  {
+    "id": "G261",
+    "coordinates": {
+      "x": 0.37,
+      "y": 1.27
+    }
+  },
+  {
+    "id": "G262",
+    "coordinates": {
+      "x": -0.48,
+      "y": 1.32
+    }
+  },
+  {
+    "id": "G263",
+    "coordinates": {
+      "x": -5.16,
+      "y": 1.34
+    }
+  },
+  {
+    "id": "G264",
+    "coordinates": {
+      "x": 5.46,
+      "y": 2.23
+    }
+  },
+  {
+    "id": "G265",
+    "coordinates": {
+      "x": 0.35,
+      "y": 2.25
+    }
+  },
+  {
+    "id": "G266",
+    "coordinates": {
+      "x": -0.43,
+      "y": 2.25
+    }
+  },
+  {
+    "id": "G267",
+    "coordinates": {
+      "x": -5.27,
+      "y": 2.28
+    }
+  },
+  {
+    "id": "G268",
+    "coordinates": {
+      "x": 5.46,
+      "y": 3.11
+    }
+  },
+  {
+    "id": "G269",
+    "coordinates": {
+      "x": 1.34,
+      "y": 3.11
+    }
+  },
+  {
+    "id": "G270",
+    "coordinates": {
+      "x": 0.37,
+      "y": 3.11
+    }
+  },
+  {
+    "id": "G271",
+    "coordinates": {
+      "x": -0.4,
+      "y": 3.11
+    }
+  },
+  {
+    "id": "G272",
+    "coordinates": {
+      "x": -5.21,
+      "y": 3.09
+    }
+  },
+  {
+    "id": "G273",
+    "coordinates": {
+      "x": 5.46,
+      "y": 4.0
+    }
+  },
+  {
+    "id": "G274",
+    "coordinates": {
+      "x": 1.34,
+      "y": 4.0
+    }
+  },
+  {
+    "id": "G275",
+    "coordinates": {
+      "x": 0.37,
+      "y": 4.0
+    }
+  },
+  {
+    "id": "G276",
+    "coordinates": {
+      "x": -0.43,
+      "y": 3.82
+    }
+  },
+  {
+    "id": "G277",
+    "coordinates": {
+      "x": -5.18,
+      "y": 4.03
+    }
+  },
+  {
+    "id": "G278",
+    "coordinates": {
+      "x": 5.46,
+      "y": 4.89
+    }
+  },
+  {
+    "id": "G279",
+    "coordinates": {
+      "x": 1.34,
+      "y": 4.89
+    }
+  },
+  {
+    "id": "G280",
+    "coordinates": {
+      "x": 0.37,
+      "y": 4.89
+    }
+  },
+  {
+    "id": "G281",
+    "coordinates": {
+      "x": -5.18,
+      "y": 4.91
+    }
+  },
+  {
+    "id": "G282",
+    "coordinates": {
+      "x": 5.46,
+      "y": 5.77
+    }
+  },
+  {
+    "id": "G283",
+    "coordinates": {
+      "x": 1.34,
+      "y": 5.77
+    }
+  },
+  {
+    "id": "G284",
+    "coordinates": {
+      "x": 0.37,
+      "y": 5.77
+    }
+  },
+  {
+    "id": "G285",
+    "coordinates": {
+      "x": -5.21,
+      "y": 5.82
+    }
+  },
+  {
+    "id": "G286",
+    "coordinates": {
+      "x": 5.79,
+      "y": 6.38
+    }
+  },
+  {
+    "id": "G287",
+    "coordinates": {
+      "x": 5.46,
+      "y": 6.66
+    }
+  },
+  {
+    "id": "G288",
+    "coordinates": {
+      "x": 1.34,
+      "y": 6.66
+    }
+  },
+  {
+    "id": "G289",
+    "coordinates": {
+      "x": 0.37,
+      "y": 6.66
+    }
+  },
+  {
+    "id": "G290",
+    "coordinates": {
+      "x": -5.21,
+      "y": 6.63
+    }
+  },
+  {
+    "id": "G291",
+    "coordinates": {
+      "x": 5.71,
+      "y": 7.54
+    }
+  },
+  {
+    "id": "G292",
+    "coordinates": {
+      "x": 5.46,
+      "y": 7.54
+    }
+  },
+  {
+    "id": "G293",
+    "coordinates": {
+      "x": 0.23,
+      "y": 7.54
+    }
+  },
+  {
+    "id": "G294",
+    "coordinates": {
+      "x": -0.4,
+      "y": 7.9
+    }
+  },
+  {
+    "id": "G295",
+    "coordinates": {
+      "x": -5.24,
+      "y": 7.59
+    }
+  },
+  {
+    "id": "G297",
+    "coordinates": {
+      "x": 0.4,
+      "y": 8.38
+    }
+  },
+  {
+    "id": "G298",
+    "coordinates": {
+      "x": 5.79,
+      "y": 8.58
+    }
+  },
+  {
+    "id": "G299",
+    "coordinates": {
+      "x": 5.46,
+      "y": 8.43
+    }
+  },
+  {
+    "id": "G300",
+    "coordinates": {
+      "x": 0.95,
+      "y": 8.66
+    }
+  },
+  {
+    "id": "G301",
+    "coordinates": {
+      "x": -0.46,
+      "y": 8.35
+    }
+  },
+  {
+    "id": "G302",
+    "coordinates": {
+      "x": -4.85,
+      "y": 8.43
+    }
+  },
+  {
+    "id": "G303",
+    "coordinates": {
+      "x": -5.18,
+      "y": 8.46
+    }
+  },
+  {
+    "id": "G306",
+    "coordinates": {
+      "x": 5.9,
+      "y": 9.44
+    }
+  },
+  {
+    "id": "G307",
+    "coordinates": {
+      "x": 5.46,
+      "y": 9.32
+    }
+  },
+  {
+    "id": "G308",
+    "coordinates": {
+      "x": 0.95,
+      "y": 9.32
+    }
+  },
+  {
+    "id": "G309",
+    "coordinates": {
+      "x": -0.59,
+      "y": 9.32
+    }
+  },
+  {
+    "id": "G310",
+    "coordinates": {
+      "x": -4.85,
+      "y": 9.32
+    }
+  },
+  {
+    "id": "G311",
+    "coordinates": {
+      "x": -5.18,
+      "y": 9.34
+    }
+  },
+  {
+    "id": "G312",
+    "coordinates": {
+      "x": 0.95,
+      "y": 10.08
+    }
+  },
+  {
+    "id": "G313",
+    "coordinates": {
+      "x": -0.59,
+      "y": 10.08
+    }
+  },
+  {
+    "id": "G317",
+    "coordinates": {
+      "x": 6.18,
+      "y": 10.18
+    }
+  },
+  {
+    "id": "G318",
+    "coordinates": {
+      "x": 5.46,
+      "y": 10.2
+    }
+  },
+  {
+    "id": "G319",
+    "coordinates": {
+      "x": 0.37,
+      "y": 10.58
+    }
+  },
+  {
+    "id": "G320",
+    "coordinates": {
+      "x": -0.32,
+      "y": 10.58
+    }
+  },
+  {
+    "id": "G321",
+    "coordinates": {
+      "x": -2.56,
+      "y": 10.58
+    }
+  },
+  {
+    "id": "G322",
+    "coordinates": {
+      "x": -3.86,
+      "y": 10.58
+    }
+  },
+  {
+    "id": "G323",
+    "coordinates": {
+      "x": -4.69,
+      "y": 10.35
+    }
+  },
+  {
+    "id": "G324",
+    "coordinates": {
+      "x": -5.21,
+      "y": 10.18
+    }
+  },
+  {
+    "id": "G325",
+    "coordinates": {
+      "x": -1.53,
+      "y": 10.61
+    }
+  },
+  {
+    "id": "G326",
+    "coordinates": {
+      "x": 0.95,
+      "y": 10.76
+    }
+  },
+  {
+    "id": "G327",
+    "coordinates": {
+      "x": 0.37,
+      "y": 10.76
+    }
+  },
+  {
+    "id": "G328",
+    "coordinates": {
+      "x": -0.46,
+      "y": 10.78
+    }
+  },
+  {
+    "id": "G329",
+    "coordinates": {
+      "x": -1.59,
+      "y": 10.76
+    }
+  },
+  {
+    "id": "G330",
+    "coordinates": {
+      "x": -2.53,
+      "y": 10.76
+    }
+  },
+  {
+    "id": "G331",
+    "coordinates": {
+      "x": 5.43,
+      "y": 10.81
+    }
+  },
+  {
+    "id": "G332",
+    "coordinates": {
+      "x": 4.63,
+      "y": 11.16
+    }
+  },
+  {
+    "id": "G333",
+    "coordinates": {
+      "x": 4.85,
+      "y": 11.16
+    }
+  },
+  {
+    "id": "G334",
+    "coordinates": {
+      "x": -4.52,
+      "y": 11.04
+    }
+  },
+  {
+    "id": "G335",
+    "coordinates": {
+      "x": 5.43,
+      "y": 11.34
+    }
+  },
+  {
+    "id": "G336",
+    "coordinates": {
+      "x": 6.07,
+      "y": 11.14
+    }
+  },
+  {
+    "id": "G337",
+    "coordinates": {
+      "x": -3.66,
+      "y": 11.06
+    }
+  },
+  {
+    "id": "G338",
+    "coordinates": {
+      "x": -5.35,
+      "y": 11.14
+    }
+  },
+  {
+    "id": "G339",
+    "coordinates": {
+      "x": 6.21,
+      "y": 11.75
+    }
+  },
+  {
+    "id": "G340",
+    "coordinates": {
+      "x": -5.79,
+      "y": 12.25
+    }
+  },
+
+  {
+    "id": "219D",
+    "coordinates": {
+      "x": -2,
+      "y": 10.5
+    },
+    "type": "universal_washroom"
+  },
+
+  {
+    "id": "204D",
+    "coordinates": {
+      "x": 4,
+      "y": 0.6
+    },
+    "type": "washroom"
+  },
+  {
+    "id": "204K",
+    "coordinates": {
+      "x": 1.1,
+      "y": 0.4
+    },
+    "type": "washroom"
+  },
+  {
+    "id": "210A",
+    "coordinates": {
+      "x": 7,
+      "y": 0.3
+    },
+    "type": "washroom"
+  },
+  {
+    "id": "210B",
+    "coordinates": {
+      "x": 6.5,
+      "y": 0
+    },
+    "type": "washroom"
+  },
+  {
+    "id": "200P",
+    "coordinates": {
+      "x": 3,
+      "y": 11.3
+    },
+    "type": "washroom"
+  },
+  {
+    "id": "200Q",
+    "coordinates": {
+      "x": 2,
+      "y": 11.3
+    },
+    "type": "washroom"
+  },
+  {
+    "id": "243",
+    "coordinates": {
+      "x": 5.5,
+      "y": -9
+    },
+    "type": "washroom"
+  },
+  {
+    "id": "219A",
+    "coordinates": {
+      "x": -2,
+      "y": 9.5
+    },
+    "type": "washroom"
+  },
+  {
+    "id": "219B",
+    "coordinates": {
+      "x": -1,
+      "y": 9.5
+    },
+    "type": "washroom"
+  },
+  {
+    "id": "219C",
+    "coordinates": {
+      "x": -1,
+      "y": 10.5
+    },
+    "type": "washroom"
+  },
+  {
+    "id": "242L",
+    "coordinates": {
+      "x": 2.5,
+      "y": -1.5
+    },
+    "type": "washroom"
+  },
+  {
+    "id": "242M",
+    "coordinates": {
+      "x": 2.5,
+      "y": -2
+    },
+    "type": "washroom"
+  },
+  {
+    "id": "231",
+    "coordinates": {
+      "x": 5,
+      "y": -9.5
+    },
+    "type": "washroom"
+  },
+  {
+    "id": "230",
+    "coordinates": {
+      "x": 5,
+      "y": -11
+    },
+    "type": "washroom"
+  },
+  {
+    "id": "240B",
+    "coordinates": {
+      "x": 6.7,
+      "y": -1.7
+    },
+    "type": "washroom"
+  }
+]

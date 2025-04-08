@@ -1,0 +1,34 @@
+[
+    {
+        "id": "Entrance",
+        "coordinates": {
+            "x": -5.5,
+            "y": -9
+        },
+        "type": "landmark"
+    },
+    {
+        "id": "Library",
+        "coordinates": {
+            "x": 3,
+            "y": -5
+        },
+        "type": "landmark"
+    },
+    {
+        "id": "Security",
+        "coordinates": {
+            "x": -1.5,
+            "y": -2.5
+        },
+        "type": "landmark"
+    },
+    {
+        "id": "Cafe",
+        "coordinates": {
+            "x": -6.5,
+            "y": -8
+        },
+        "type": "landmark"
+    }
+]
