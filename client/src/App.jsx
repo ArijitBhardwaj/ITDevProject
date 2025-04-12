@@ -4,7 +4,8 @@ import SignUp from "./Pages/SignUp";
 import SignIn from "./Pages/SignIn";
 import HomePage from "./Pages/HomePage";
 import TestingLandingPage from './Pages/TestingLandingPage';
-import UserProfilePage from './Pages/UserProfilePage'
+import UserProfilePage from './Pages/UserProfilePage';
+import NavigationPage from './Pages/NavigationPage'
 
 function App() {
   const routes = useRoutes([
@@ -27,6 +28,10 @@ function App() {
     {
       path: "/userprofilepage",
       element: <UserProfilePage/>,
+    },
+    {
+      path: "/navigationpage",
+      element: <NavigationPage/>,
     }
   ]);
 
