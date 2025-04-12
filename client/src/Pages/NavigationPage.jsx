@@ -13,11 +13,12 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import RoomPreferencesIcon from "@mui/icons-material/RoomPreferences";
-// import Map from "./Map.jsx"; // Commented out to avoid image load error
+// import Map from "./Map.jsx"; // enable once map is fixed
 import QrScannerModal from "../components/QRScannerModal";
 
 const NavigationPage = () => {
-  const [search, setSearch] = useState("");
+  const [currentLocation, setCurrentLocation] = useState("");
+  const [destination, setDestination] = useState("");
   const [locationDropdown, setLocationDropdown] = useState("");
   const [showScanner, setShowScanner] = useState(false);
   const [scanError, setScanError] = useState(null);
@@ -30,7 +31,7 @@ const NavigationPage = () => {
   ];
 
   const filteredRooms = dummyRooms.filter((room) =>
-    room.toLowerCase().includes(search.toLowerCase())
+    room.toLowerCase().includes(destination.toLowerCase())
   );
 
   const handleStartScan = async () => {
@@ -54,7 +55,7 @@ const NavigationPage = () => {
   const handleScan = (data) => {
     const validCodes = ["A1", "B2", "C3", "D4"];
     if (validCodes.includes(data)) {
-      setSearch(`Room ${data}`);
+      setCurrentLocation(data);
       setShowScanner(false);
       setScanError(null);
     } else {
@@ -64,15 +65,8 @@ const NavigationPage = () => {
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: "linear-gradient(to bottom, #fdfbfb, #ebedee)",
-        p: 2,
-      }}
-    >
+    <Box sx={{ minHeight: "100vh", background: "linear-gradient(to bottom, #fdfbfb, #ebedee)", p: 2 }}>
       <Container maxWidth="sm">
-        {/* Map Section */}
         <Paper
           elevation={4}
           sx={{
@@ -88,54 +82,18 @@ const NavigationPage = () => {
             fontWeight: 500
           }}
         >
-          {/* <Map /> */}
           🗺️ Map will load here once image issues are fixed
         </Paper>
 
-        {/* Search + Button */}
+        {/* Where are you? */}
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>Where are you?</Typography>
         <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
           <TextField
             fullWidth
-            variant="outlined"
-            placeholder="Search room"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            sx={{ bgcolor: "#fff", borderRadius: 2 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="action" />
-                </InputAdornment>
-              ),
-            }}
+            placeholder="Enter current location"
+            value={currentLocation}
+            onChange={(e) => setCurrentLocation(e.target.value)}
           />
-          <Button
-            variant="contained"
-            sx={{
-              bgcolor: "#0288d1",
-              px: 3,
-              ":hover": { bgcolor: "#0277bd" },
-            }}
-          >
-            Search
-          </Button>
-        </Box>
-
-        {/* Location Dropdown + QR */}
-        <Box sx={{ display: "flex", gap: 1, mb: 3 }}>
-          <TextField
-            select
-            label="Select Location"
-            value={locationDropdown}
-            onChange={(e) => setLocationDropdown(e.target.value)}
-            fullWidth
-            sx={{ bgcolor: "#fff", borderRadius: 2 }}
-          >
-            <MenuItem value="Entrance">Entrance</MenuItem>
-            <MenuItem value="Library">Library</MenuItem>
-            <MenuItem value="Lab">Lab</MenuItem>
-            <MenuItem value="Lecture Hall">Lecture Hall</MenuItem>
-          </TextField>
           <Button
             variant="outlined"
             startIcon={<QrCodeScannerIcon />}
@@ -146,7 +104,39 @@ const NavigationPage = () => {
           </Button>
         </Box>
 
-        {/* Room Buttons */}
+        {/* Where do you want to go? */}
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>Where do you want to go?</Typography>
+        <TextField
+          fullWidth
+          placeholder="Enter destination"
+          value={destination}
+          onChange={(e) => setDestination(e.target.value)}
+          sx={{ mb: 2 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon color="action" />
+              </InputAdornment>
+            )
+          }}
+        />
+
+        {/* Dropdown (optional) */}
+        <TextField
+          select
+          label="Select nearby location"
+          value={locationDropdown}
+          onChange={(e) => setLocationDropdown(e.target.value)}
+          fullWidth
+          sx={{ bgcolor: "#fff", borderRadius: 2, mb: 3 }}
+        >
+          <MenuItem value="Entrance">Entrance</MenuItem>
+          <MenuItem value="Library">Library</MenuItem>
+          <MenuItem value="Lab">Lab</MenuItem>
+          <MenuItem value="Lecture Hall">Lecture Hall</MenuItem>
+        </TextField>
+
+        {/* Result Buttons */}
         <Grid container spacing={2}>
           {filteredRooms.map((room, index) => (
             <Grid item xs={6} sm={4} key={index}>
@@ -160,9 +150,7 @@ const NavigationPage = () => {
                   boxShadow: 2,
                   textTransform: "none",
                   height: 60,
-                  ":hover": {
-                    bgcolor: "#00897b"
-                  }
+                  ":hover": { bgcolor: "#00897b" }
                 }}
                 startIcon={<RoomPreferencesIcon />}
               >
@@ -172,27 +160,20 @@ const NavigationPage = () => {
           ))}
         </Grid>
 
-        {/* No match */}
         {filteredRooms.length === 0 && (
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            align="center"
-            sx={{ mt: 4 }}
-          >
+          <Typography variant="body1" align="center" sx={{ mt: 4 }} color="text.secondary">
             No matching rooms found 🫠
           </Typography>
         )}
 
-        {/* QR Scanner Modal */}
+        {/* QR Modal */}
         {showScanner && (
-            <Box sx={{mt: 4}}>
-                <QrScannerModal
-            onScan={handleScan}
-            onClose={() => setShowScanner(false)}
-          />
-            </Box>
-          
+          <Box sx={{ mt: 4 }}>
+            <QrScannerModal
+              onScan={handleScan}
+              onClose={() => setShowScanner(false)}
+            />
+          </Box>
         )}
       </Container>
     </Box>
