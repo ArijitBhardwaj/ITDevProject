@@ -65,7 +65,7 @@ export default function NavigationPage() {
   };
 
   const handleScan = (data) => {
-    const validCodes = ["A1", "B2", "C3", "D4"];
+    const validCodes = ["G138", "B2", "C3", "D4"];
     if (validCodes.includes(data)) {
       setCurrentLocation(data);
       setShowScanner(false);
