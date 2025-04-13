@@ -3,9 +3,10 @@ import { useRoutes } from "react-router-dom";
 import SignUp from "./Pages/SignUp";
 import SignIn from "./Pages/SignIn";
 import HomePage from "./Pages/HomePage";
-import TestingLandingPage from './Pages/TestingLandingPage';
-import UserProfilePage from './Pages/UserProfilePage';
-import NavigationPage from './Pages/NavigationPage'
+import TestingLandingPage from "./Pages/TestingLandingPage";
+import UserProfilePage from "./Pages/UserProfilePage";
+import NavigationPage from "./Pages/NavigationPage";
+import OngoingNavigation from "./Pages/OngoingNavigation";
 
 function App() {
   const routes = useRoutes([
@@ -22,17 +23,18 @@ function App() {
       element: <SignIn />,
     },
     {
-      path : "/testinglanding",
-      element : <TestingLandingPage />,
+      path: "/testinglanding",
+      element: <TestingLandingPage />,
     },
     {
       path: "/userprofilepage",
-      element: <UserProfilePage/>,
+      element: <UserProfilePage />,
     },
     {
       path: "/navigationpage",
-      element: <NavigationPage/>,
-    }
+      element: <NavigationPage />,
+    },
+    { path: "/ongoingnav", element: <OngoingNavigation /> },
   ]);
 
   return <>{routes}</>;

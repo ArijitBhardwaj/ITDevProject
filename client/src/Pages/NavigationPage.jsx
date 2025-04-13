@@ -12,10 +12,14 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import RoomPreferencesIcon from "@mui/icons-material/RoomPreferences";
-import QrScannerModal from "../components/QRScannerModal";
-import MapView from "./MapView"; // import the updated MapView
+import { useNavigate } from "react-router-dom";
 
-const NavigationPage = () => {
+import QrScannerModal from "../components/QRScannerModal";
+import MapView from "./MapView";
+
+export default function NavigationPage() {
+  const navigate = useNavigate();
+
   const [currentLocation, setCurrentLocation] = useState("");
   const [destination, setDestination] = useState("");
   const [showScanner, setShowScanner] = useState(false);
@@ -23,9 +27,9 @@ const NavigationPage = () => {
   const [isInitializingScanner, setIsInitializingScanner] = useState(false);
 
   const [instructions, setInstructions] = useState([]);
-  const [nodeSequence, setNodeSequence] = useState([]); // path data
+  const [nodeSequence, setNodeSequence] = useState([]);
 
-  // Demo rooms
+  // For demonstration
   const dummyRooms = [
     "Room A101",
     "Room B203",
@@ -49,7 +53,7 @@ const NavigationPage = () => {
       const permissions = await navigator.permissions.query({ name: "camera" });
       if (permissions.state === "denied") {
         throw new Error(
-          "Camera access blocked. Please enable in browser settings."
+          "Camera access blocked. Please enable it in browser settings."
         );
       }
       setShowScanner(true);
@@ -61,18 +65,17 @@ const NavigationPage = () => {
   };
 
   const handleScan = (data) => {
-    const validCodes = ["G138", "B2", "C3", "D4"];
+    const validCodes = ["A1", "B2", "C3", "D4"];
     if (validCodes.includes(data)) {
       setCurrentLocation(data);
       setShowScanner(false);
       setScanError(null);
     } else {
-      setScanError("Invalid QR code. Please scan A1/B2/C3/D4.");
+      setScanError("Invalid QR code. Please scan A1 / B2 / C3 / D4.");
       setShowScanner(false);
     }
   };
 
-  // POST to your Neo4j route
   const handleGetDirections = async () => {
     if (!currentLocation || !destination) {
       setScanError("Please scan your location and type a destination.");
@@ -114,6 +117,17 @@ const NavigationPage = () => {
     }
   };
 
+  const handleStartNavigation = () => {
+    // We'll pass instructions, nodeSequence, destination into OngoingNavigation
+    navigate("/ongoingnav", {
+      state: {
+        instructions,
+        nodeSequence,
+        destination,
+      },
+    });
+  };
+
   return (
     <Box
       sx={{
@@ -123,7 +137,6 @@ const NavigationPage = () => {
       }}
     >
       <Container maxWidth="sm">
-        {/* We'll place the map at the top in a Paper container */}
         <Paper
           elevation={4}
           sx={{
@@ -187,7 +200,7 @@ const NavigationPage = () => {
           }}
         />
 
-        {/* Example "found rooms" */}
+        {/* Demo rooms */}
         <Grid container spacing={2}>
           {filteredRooms.map((room, index) => (
             <Grid item xs={6} sm={4} key={index}>
@@ -223,7 +236,7 @@ const NavigationPage = () => {
           </Typography>
         )}
 
-        {/* Get Directions Button */}
+        {/* Get Directions */}
         <Box sx={{ textAlign: "center", mt: 3 }}>
           <Button variant="contained" onClick={handleGetDirections}>
             GET DIRECTIONS
@@ -242,6 +255,19 @@ const NavigationPage = () => {
           </Box>
         )}
 
+        {/* If we have a path, show the "Start Navigation" button */}
+        {nodeSequence.length > 0 && (
+          <Box sx={{ textAlign: "center", mt: 3 }}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleStartNavigation}
+            >
+              Start Navigation
+            </Button>
+          </Box>
+        )}
+
         {/* QR Modal */}
         {showScanner && (
           <Box sx={{ mt: 4 }}>
@@ -254,6 +280,4 @@ const NavigationPage = () => {
       </Container>
     </Box>
   );
-};
-
-export default NavigationPage;
+}
