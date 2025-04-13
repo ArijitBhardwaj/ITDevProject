@@ -10,12 +10,9 @@ const neo4j = require("neo4j-driver");
 
 // Create driver with encryption off for local dev
 const driver = neo4j.driver(
-  "bolt://localhost:7687",
-  neo4j.auth.basic("neo4j", "12345678"),
-  {
-    encrypted: "ENCRYPTION_OFF",
-    trust: "TRUST_ALL_CERTIFICATES",
-  }
+  "neo4j+s://0bd9eb92.databases.neo4j.io", // from Aura
+  neo4j.auth.basic("neo4j", "si5lTkftMBNyESFG-hGczn5QThMCdNYml_E2WO9PjEk")
+  // For Aura, encryption is on by default, so you do NOT need extra config
 );
 
 /*
