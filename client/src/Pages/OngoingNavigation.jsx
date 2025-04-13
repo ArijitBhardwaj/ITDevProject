@@ -1,10 +1,12 @@
+// src/Pages/OngoingNavigation.jsx
+
 import React, { useEffect, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import MapView from "./MapView";
 
 /**
- * Utility: compute Euclidian distance between two consecutive nodes in the nodeSequence
+ * Utility: compute Euclidean distance between consecutive nodes
  */
 function distanceBetween(a, b) {
   const dx = b.x - a.x;
@@ -13,24 +15,14 @@ function distanceBetween(a, b) {
 }
 
 /**
- * chunkRoute()
- * Splits the entire path into "subsections" of ~15m each
- * Also splits instructions accordingly.
- * 
- * We'll do a simple approach:
- * - We'll iterate nodeSequence from start->end,
- *   summing distances until we exceed 15m,
- *   that becomes a chunk.
- * 
- * For instructions: we'll group them in the same chunk.
- * The last chunk can be smaller than 15 if needed.
+ * chunkRoute() — Splits the nodeSequence & instructions into ~15m subsections
  */
 function chunkRoute(nodeSequence, instructions) {
   if (!nodeSequence || nodeSequence.length < 2) {
     return [
       {
-        nodes: nodeSequence,
-        instructions: instructions,
+        nodes: nodeSequence || [],
+        instructions: instructions || [],
       },
     ];
   }
@@ -40,53 +32,44 @@ function chunkRoute(nodeSequence, instructions) {
   let currentInstructions = [];
 
   let distSoFar = 0;
-  let instrIndex = 0;
 
-  // We'll track instructions step by step as we add nodes
-  // Because each "step" in instructions typically correlates to going from node i->i+1
-  // 
-  // instructions might be e.g.:
-  //   [ "Start at G120", "Walk east 1.2m...", "Arrived at G125" ]
-  // but we'll approximate them chunk wise.
-
+  // We'll assume instructions[0] is "Start at ____"
+  // Then instructions[i+1] typically describes traveling i->i+1
+  // Adjust if your instructions differ.
   for (let i = 0; i < nodeSequence.length - 1; i++) {
     const a = nodeSequence[i];
     const b = nodeSequence[i + 1];
-    let segmentDist = distanceBetween(a, b);
+    const segmentDist = distanceBetween(a, b);
 
-    // Add next node
     currentNodes.push(b);
-
     distSoFar += segmentDist;
 
-    // We'll also push instructions[i] into currentInstructions
-    if (i < instructions.length) {
-      currentInstructions.push(instructions[i + 1]); 
-      // +1 because instructions[0] is usually "Start at ____"
-      // adjust as needed
+    // Add instructions[i+1] if it exists
+    if (i + 1 < instructions.length) {
+      currentInstructions.push(instructions[i + 1]);
     }
 
+    // If we reached ~15m, close off this chunk
     if (distSoFar >= 15) {
-      // finalize chunk
       chunks.push({
         nodes: [...currentNodes],
         instructions: [...currentInstructions],
       });
-      // reset
+      distSoFar = 0;
+      // start a new chunk from b
       currentNodes = [b];
       currentInstructions = [];
-      distSoFar = 0;
     }
   }
 
-  // push the final chunk if there's leftover
+  // final chunk leftover
   if (currentNodes.length > 1 || chunks.length === 0) {
-    // Also push the last instruction if it isn't added
-    // The final line might be "You have arrived at ____"
-    if (instructions[instructions.length - 1]?.startsWith("You have arrived")) {
-      currentInstructions.push(instructions[instructions.length - 1]);
+    // We also might want to add the final "You have arrived" line if it wasn't included
+    // If instructions end with "You have arrived...", add it
+    let lastMsg = instructions[instructions.length - 1];
+    if (lastMsg && lastMsg.startsWith("You have arrived")) {
+      currentInstructions.push(lastMsg);
     }
-
     chunks.push({
       nodes: currentNodes,
       instructions: currentInstructions,
@@ -99,6 +82,8 @@ function chunkRoute(nodeSequence, instructions) {
 export default function OngoingNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // We assume location.state was passed from NavigationPage
   const { instructions, nodeSequence, destination } = location.state || {};
 
   const [subsections, setSubsections] = useState([]);
@@ -106,11 +91,10 @@ export default function OngoingNavigation() {
 
   useEffect(() => {
     if (!nodeSequence || nodeSequence.length === 0) {
-      // If there's no route data, redirect back
+      // no route data => go back
       navigate("/navigationpage");
       return;
     }
-    // chunk the route
     const splitted = chunkRoute(nodeSequence, instructions);
     setSubsections(splitted);
     setCurrentIndex(0);
@@ -118,48 +102,45 @@ export default function OngoingNavigation() {
 
   if (!subsections || subsections.length === 0) {
     return (
-      <Box>
+      <Box sx={{ minHeight: "100vh", p: 2 }}>
         <Typography>Loading route data...</Typography>
       </Box>
     );
   }
 
-  // The current subsection
   const sub = subsections[currentIndex];
   const isLast = currentIndex === subsections.length - 1;
 
+  // "Feeling Lost?" => go to NavigationPage with the old destination
   const handleFeelingLost = () => {
-    // Return to navigation page fresh
-    navigate("/navigationpage", { replace: true });
+    // We pass the old 'destination' so that NavPage can prefill it
+    navigate("/navigationpage", {
+      state: { destination },
+    });
   };
 
+  // Next chunk
   const handleNext = () => {
     if (!isLast) {
       setCurrentIndex((prev) => prev + 1);
     }
   };
 
+  // If done
   const handleCompleted = () => {
-    // final
-    navigate("/navigationpage", { replace: true });
+    navigate("/navigationpage", { state: { destination } });
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        p: 2,
-        bgcolor: "#f5f5f5",
-      }}
-    >
+    <Box sx={{ minHeight: "100vh", p: 2, bgcolor: "#f5f5f5" }}>
       <Typography variant="h5" align="center" gutterBottom>
         Ongoing Navigation
       </Typography>
       <Typography variant="subtitle1" align="center" gutterBottom>
-        Destination: {destination}
+        Destination: {destination || "(none)"}
       </Typography>
 
-      {/* Subsection's map: we pass sub.nodes as nodeSequence */}
+      {/* Show the chunk's partial path in MapView */}
       <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
         <MapView nodeSequence={sub.nodes} />
       </Box>
@@ -188,7 +169,7 @@ export default function OngoingNavigation() {
         )}
       </Box>
 
-      {/* Instructions for this subsection */}
+      {/* Subsection instructions */}
       <Box sx={{ maxWidth: 600, mx: "auto" }}>
         <Typography variant="h6" gutterBottom>
           Subsection {currentIndex + 1} of {subsections.length}
@@ -200,7 +181,7 @@ export default function OngoingNavigation() {
             ))}
           </ol>
         ) : (
-          <Typography>No specific instructions for this chunk.</Typography>
+          <Typography>No instructions in this chunk.</Typography>
         )}
       </Box>
     </Box>

@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+// src/Pages/NavigationPage.jsx
+
+import React, { useState, useEffect } from "react";
 import {
   Box,
   TextField,
@@ -12,13 +14,14 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import RoomPreferencesIcon from "@mui/icons-material/RoomPreferences";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import QrScannerModal from "../components/QRScannerModal";
 import MapView from "./MapView";
 
 export default function NavigationPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [currentLocation, setCurrentLocation] = useState("");
   const [destination, setDestination] = useState("");
@@ -29,7 +32,14 @@ export default function NavigationPage() {
   const [instructions, setInstructions] = useState([]);
   const [nodeSequence, setNodeSequence] = useState([]);
 
-  // For demonstration
+  // If OngoingNavigation leads back here with a prefilled destination
+  useEffect(() => {
+    if (location.state?.destination) {
+      setDestination(location.state.destination);
+    }
+  }, [location]);
+
+  // Demo rooms for the dropdown
   const dummyRooms = [
     "Room A101",
     "Room B203",
@@ -52,9 +62,7 @@ export default function NavigationPage() {
 
       const permissions = await navigator.permissions.query({ name: "camera" });
       if (permissions.state === "denied") {
-        throw new Error(
-          "Camera access blocked. Please enable it in browser settings."
-        );
+        throw new Error("Camera access blocked. Please enable in browser settings.");
       }
       setShowScanner(true);
     } catch (error) {
@@ -65,7 +73,7 @@ export default function NavigationPage() {
   };
 
   const handleScan = (data) => {
-    const validCodes = ["G138", "B2", "C3", "D4"];
+    const validCodes = ["A1", "B2", "C3", "D4"];
     if (validCodes.includes(data)) {
       setCurrentLocation(data);
       setShowScanner(false);
@@ -76,6 +84,7 @@ export default function NavigationPage() {
     }
   };
 
+  // The main "Get Directions" function
   const handleGetDirections = async () => {
     if (!currentLocation || !destination) {
       setScanError("Please scan your location and type a destination.");
@@ -86,17 +95,15 @@ export default function NavigationPage() {
       setInstructions([]);
       setNodeSequence([]);
 
-      const response = await fetch(
-        "http://192.168.1.67:5001/api/neo4j/calc-path",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            startId: currentLocation,
-            endId: destination,
-          }),
-        }
-      );
+      // Check your server IP/port below
+      const response = await fetch("http://192.168.1.67:5001/api/neo4j/calc-path", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          startId: currentLocation,
+          endId: destination,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error: ${response.status}`);
@@ -118,7 +125,7 @@ export default function NavigationPage() {
   };
 
   const handleStartNavigation = () => {
-    // We'll pass instructions, nodeSequence, destination into OngoingNavigation
+    // Pass instructions, nodeSequence, destination to OngoingNavigation
     navigate("/ongoingnav", {
       state: {
         instructions,
@@ -151,6 +158,7 @@ export default function NavigationPage() {
             fontWeight: 500,
           }}
         >
+          {/* MapView always displayed, with or without path */}
           <MapView nodeSequence={nodeSequence} />
         </Paper>
 
@@ -200,7 +208,7 @@ export default function NavigationPage() {
           }}
         />
 
-        {/* Demo rooms */}
+        {/* Demo "found rooms" */}
         <Grid container spacing={2}>
           {filteredRooms.map((room, index) => (
             <Grid item xs={6} sm={4} key={index}>
@@ -236,14 +244,14 @@ export default function NavigationPage() {
           </Typography>
         )}
 
-        {/* Get Directions */}
+        {/* "Get Directions" */}
         <Box sx={{ textAlign: "center", mt: 3 }}>
           <Button variant="contained" onClick={handleGetDirections}>
             GET DIRECTIONS
           </Button>
         </Box>
 
-        {/* Instructions */}
+        {/* Show instructions if we have them */}
         {instructions.length > 0 && (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h6">Instructions:</Typography>
@@ -255,14 +263,10 @@ export default function NavigationPage() {
           </Box>
         )}
 
-        {/* If we have a path, show the "Start Navigation" button */}
+        {/* Show "Start Navigation" if path is set */}
         {nodeSequence.length > 0 && (
           <Box sx={{ textAlign: "center", mt: 3 }}>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={handleStartNavigation}
-            >
+            <Button variant="outlined" color="secondary" onClick={handleStartNavigation}>
               Start Navigation
             </Button>
           </Box>

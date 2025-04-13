@@ -4,12 +4,11 @@ import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import mapImage from "../assets/vcc_floor1_grid.png";
 
 /**
- * Convert your path node coordinates (campus coords) -> 512x512 image space
+ * Convert campus-coord path => 512x512 image-coord path
  */
 function scaleCoordinatesForImage(nodes) {
   return nodes.map(([x, y]) => {
-    // The same logic you had:
-    //   multiply by (256/20), shift +256, invert y +256
+    // same logic from your code
     let scaledX = x * (256 / 20) + 256;
     let scaledY = y * (256 / 20) * -1 + 256;
     return [scaledX, scaledY];
@@ -17,7 +16,7 @@ function scaleCoordinatesForImage(nodes) {
 }
 
 /**
- * Basic Euclidian distance between two [x,y] points
+ * Basic 2D Euclidean distance
  */
 function distance2D(x1, y1, x2, y2) {
   const dx = x2 - x1;
@@ -26,8 +25,7 @@ function distance2D(x1, y1, x2, y2) {
 }
 
 /**
- * Build an array of segments for the polyline,
- * each item: { x1, y1, x2, y2, length, cumulativeDist }
+ * Build an array of segments for the polyline
  */
 function buildSegments(points) {
   let segments = [];
@@ -45,26 +43,24 @@ function buildSegments(points) {
       x2,
       y2,
       length,
-      // How far from the start of the path up to end of this segment
-      cumulativeDist: cumulative,
+      cumulativeDist: cumulative, // total distance up to end of this segment
     });
   }
   return segments;
 }
 
 /**
- * Given a distance "dist" along the path, find x,y on the polyline.
- * Also compute a small angle for arrow rotation so it points in the direction of travel.
+ * Return x,y,angle for the arrow given "dist" along the entire polyline
  */
 function getPointAtDistance(segments, dist) {
   if (segments.length === 0) {
-    // No path => default marker at (0,0), rotation=0
     return { x: 0, y: 0, angle: 0 };
   }
 
-  // If dist is beyond or at the end, snap to last segment end
   const totalLength = segments[segments.length - 1].cumulativeDist;
+  // clamp dist to [0..totalLength] if needed
   if (dist >= totalLength) {
+    // end of path
     let last = segments[segments.length - 1];
     return {
       x: last.x2,
@@ -73,14 +69,13 @@ function getPointAtDistance(segments, dist) {
     };
   }
 
-  // Otherwise, find the segment containing "dist"
+  // find which segment has "dist"
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i];
     const startDist = i === 0 ? 0 : segments[i - 1].cumulativeDist;
     const endDist = seg.cumulativeDist;
 
     if (dist >= startDist && dist <= endDist) {
-      // We are within this segment
       const segFrac = (dist - startDist) / seg.length; // 0..1
       const x = seg.x1 + (seg.x2 - seg.x1) * segFrac;
       const y = seg.y1 + (seg.y2 - seg.y1) * segFrac;
@@ -88,7 +83,8 @@ function getPointAtDistance(segments, dist) {
       return { x, y, angle };
     }
   }
-  // fallback
+
+  // fallback: last point
   let last = segments[segments.length - 1];
   return {
     x: last.x2,
@@ -97,15 +93,12 @@ function getPointAtDistance(segments, dist) {
   };
 }
 
-/** Compute angle in degrees from (x1,y1)->(x2,y2) for arrow rotation */
+/** Angle in degrees for arrow from (x1,y1) to (x2,y2) */
 function angleBetween(x1, y1, x2, y2) {
   const dx = x2 - x1;
   const dy = y2 - y1;
-  // angle in radians
   const rad = Math.atan2(dy, dx);
-  // convert to degrees
-  let deg = (rad * 180) / Math.PI;
-  return deg;
+  return (rad * 180) / Math.PI;
 }
 
 export default function MapView({ nodeSequence }) {
@@ -114,13 +107,12 @@ export default function MapView({ nodeSequence }) {
   const [arrowPos, setArrowPos] = useState({ x: 0, y: 0, angle: 0 });
   const animationRef = useRef(null);
 
-  // Build the path points
+  // build the path + start or stop animation
   useEffect(() => {
     if (!nodeSequence || nodeSequence.length === 0) {
       setRenderPoints([]);
       setSegments([]);
       setArrowPos({ x: 0, y: 0, angle: 0 });
-      // Also stop any old animation
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
         animationRef.current = null;
@@ -128,7 +120,7 @@ export default function MapView({ nodeSequence }) {
       return;
     }
 
-    // 1) scale node coords to image coords
+    // 1) scale coords
     const coords = nodeSequence.map((n) => [n.x, n.y]);
     const scaled = scaleCoordinatesForImage(coords);
     setRenderPoints(scaled);
@@ -137,31 +129,29 @@ export default function MapView({ nodeSequence }) {
     const segs = buildSegments(scaled);
     setSegments(segs);
 
-    // 3) start arrow animation from 0..distance
+    // 3) start indefinite arrow animation
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
+
     let startTime = performance.now();
-    let totalDist = segs.length ? segs[segs.length - 1].cumulativeDist : 0;
-    let duration = 8000; // 8 seconds total. Adjust as you prefer.
+    const totalDist = segs.length ? segs[segs.length - 1].cumulativeDist : 0;
+    const duration = 8000; // 8 seconds for entire path
 
     function animateArrow(timestamp) {
       let elapsed = timestamp - startTime;
-      let t = elapsed / duration;
-      if (t > 1) t = 1;
-      let dist = t * totalDist;
+      let t = (elapsed % duration) / duration;
+      // we use modulo (%) so that it loops continuously
 
+      let dist = t * totalDist;
       let { x, y, angle } = getPointAtDistance(segs, dist);
       setArrowPos({ x, y, angle });
 
-      if (t < 1) {
-        animationRef.current = requestAnimationFrame(animateArrow);
-      }
+      animationRef.current = requestAnimationFrame(animateArrow);
     }
     animationRef.current = requestAnimationFrame(animateArrow);
 
-    // cleanup
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
@@ -173,10 +163,8 @@ export default function MapView({ nodeSequence }) {
   // polyline string
   const pointsString = renderPoints.map((pt) => pt.join(",")).join(" ");
 
-  // Marker offset so arrow's center lines up nicely
-  // We'll use `transform` with `translate(-8, -8)` to center the arrow on x,y
+  // arrow config
   const arrowSize = 16;
-
   const containerSize = 512;
 
   return (
@@ -209,7 +197,6 @@ export default function MapView({ nodeSequence }) {
               backgroundPosition: "center",
             }}
           >
-            {/* If we have a path, draw it with an SVG overlay */}
             {renderPoints.length > 0 && (
               <svg
                 width={containerSize}
@@ -221,12 +208,13 @@ export default function MapView({ nodeSequence }) {
                   pointerEvents: "none",
                 }}
               >
+                {/* The path line */}
                 <polyline
                   points={pointsString}
                   style={{ fill: "none", stroke: "blue", strokeWidth: 2.5 }}
                 />
 
-                {/* Animated arrow marker */}
+                {/* The looping arrow marker */}
                 <g
                   transform={`
                     translate(${arrowPos.x}, ${arrowPos.y})
@@ -234,7 +222,6 @@ export default function MapView({ nodeSequence }) {
                     translate(${-arrowSize / 2}, ${-arrowSize / 2})
                   `}
                 >
-                  {/* Simple arrow shape: a small polygon, or you can use a circle */}
                   <polygon
                     points="0,0 16,8 0,16"
                     fill="red"
