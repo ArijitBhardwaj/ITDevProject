@@ -20,10 +20,6 @@ app.use(
 
 app.use(express.json());
 
-// Existing Navigation Routes
-const navigationRoutes = require("./routes/navigationRoutes");
-app.use("/api/navigation", navigationRoutes);
-
 // NEW: Neo4j Routes
 const neo4jRoutes = require("./routes/neo4jRoutes");
 app.use("/api/neo4j", neo4jRoutes);
