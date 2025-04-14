@@ -93,7 +93,7 @@ export default function NavigationPage() {
 
       // Check your server IP/port below
       const response = await fetch(
-        "http://192.168.1.67:5001/api/neo4j/calc-path",
+        "https://itdevprojectbackend.onrender.com/api/neo4j/calc-path",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
