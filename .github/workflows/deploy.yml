@@ -24,6 +24,9 @@ jobs:
           npm run build
 
       - name: Deploy to GitHub Pages
-        run: |
-          cd client
-          npx gh-pages -d dist
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          # Directory with your built files (the "dist" folder)
+          publish_dir: client/dist
+          # Use the GitHub token automatically provided to Actions
+          github_token: ${{ secrets.GITHUB_TOKEN }}
