@@ -1,0 +1,42 @@
+[
+    {
+        "id": "ELCA",
+        "coordinates": {
+            "x": -2.6,
+            "y": -11.8
+        },
+        "type": "elevator"
+    },
+    {
+        "id": "ELCB",
+        "coordinates": {
+            "x": -4,
+            "y": -6
+        },
+        "type": "elevator"
+    },
+    {
+        "id": "ELCC",
+        "coordinates": {
+            "x": -4,
+            "y": -5.5
+        },
+        "type": "elevator"
+    },
+    {
+        "id": "ELCD",
+        "coordinates": {
+            "x": -4,
+            "y": -5
+        },
+        "type": "elevator"
+    },
+    {
+        "id": "ELCE",
+        "coordinates": {
+            "x": -3.5,
+            "y": 12
+        },
+        "type": "elevator"
+    }
+]

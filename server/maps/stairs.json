@@ -1,0 +1,74 @@
+[
+    {
+        "id": "STR2A",
+        "coordinates": {
+            "x": 6,
+            "y": 12
+        },
+        "type": "stairs"
+    },
+    {
+        "id": "STR2B",
+        "coordinates": {
+            "x": -5,
+            "y": 12
+        },
+        "type": "stairs"
+    },
+    {
+        "id": "STR2C",
+        "coordinates": {
+            "x": 0,
+            "y": 9
+        },
+        "type": "stairs"
+    },
+    {
+        "id": "STR2D",
+        "coordinates": {
+            "x": -6,
+            "y": 0
+        },
+        "type": "stairs"
+    },
+    {
+        "id": "STR2E",
+        "coordinates": {
+            "x": 7,
+            "y": -0.5
+        },
+        "type": "stairs"
+    },
+    {
+        "id": "STR2F",
+        "coordinates": {
+            "x": -5,
+            "y": -5
+        },
+        "type": "stairs"
+    },
+    {
+        "id": "STR2G",
+        "coordinates": {
+            "x": -5,
+            "y": -6
+        },
+        "type": "stairs"
+    },
+    {
+        "id": "STR2J",
+        "coordinates": {
+            "x": 7.6,
+            "y": -11.5
+        },
+        "type": "stairs"
+    },
+    {
+        "id": "STR2L",
+        "coordinates": {
+            "x": -2.6,
+            "y": -10
+        },
+        "type": "stairs"
+    }
+]

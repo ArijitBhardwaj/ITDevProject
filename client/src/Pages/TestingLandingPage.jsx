@@ -1,5 +1,6 @@
+import React from "react";
 import { useState } from "react";
-import QrScannerModal from "../components/QRScannerModal"; // path may differ
+import QrScannerModal from "../components/QRScannerModal"; 
 import { ErrorBoundary } from "react-error-boundary";
 
 const TestingLandingPage = () => {

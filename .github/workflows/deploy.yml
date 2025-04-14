@@ -1,0 +1,34 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [final_back_front_Merged]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Grants GitHub Actions write access to push to gh-pages
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install Dependencies and Build Frontend
+        run: |
+          cd client
+          npm install
+          npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          # Directory with your built files (the "dist" folder)
+          publish_dir: client/dist
+          # Use the GitHub token automatically provided to Actions
+          github_token: ${{ secrets.GITHUB_TOKEN }}
