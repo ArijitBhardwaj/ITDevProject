@@ -3,7 +3,7 @@ import { Box } from "@mui/material";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import mapImage from "../assets/vcc_floor1_grid.png";
 
-/** Convert campus coords -> 512x512 for path. */
+/** Convert campus coords -> [0..512] space for the path lines. */
 function scaleCoordinatesForImage(nodes) {
   return nodes.map(([x, y]) => {
     let scaledX = x * (256 / 20) + 256;
@@ -19,7 +19,7 @@ function distance2D(x1, y1, x2, y2) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-/** Build array of line segments for arrow animation. */
+/** Build array of segments for arrow animation. */
 function buildSegments(points) {
   let segments = [];
   let cumulative = 0;
@@ -33,7 +33,7 @@ function buildSegments(points) {
   return segments;
 }
 
-/** Return { x, y, angle } given dist along the entire polyline. */
+/** Return x,y,angle if traveling dist along the polyline. */
 function getPointAtDistance(segments, dist) {
   if (!segments.length) return { x: 0, y: 0, angle: 0 };
   const totalLen = segments[segments.length - 1].cumulativeDist;
@@ -51,6 +51,7 @@ function getPointAtDistance(segments, dist) {
     const seg = segments[i];
     const startDist = i === 0 ? 0 : segments[i - 1].cumulativeDist;
     const endDist = seg.cumulativeDist;
+
     if (dist >= startDist && dist <= endDist) {
       let frac = (dist - startDist) / seg.length;
       let x = seg.x1 + (seg.x2 - seg.x1) * frac;
@@ -68,16 +69,16 @@ function getPointAtDistance(segments, dist) {
   };
 }
 
-/** Compute angle in degrees from (x1,y1)->(x2,y2). */
+/** Angle in degrees from (x1,y1) to (x2,y2). */
 function angleBetween(x1, y1, x2, y2) {
   const rad = Math.atan2(y2 - y1, x2 - x1);
   return (rad * 180) / Math.PI;
 }
 
 /**
- * MapView
- * - A fixed 512×512 container for desktop
- * - Freed-up pan/zoom for mobile
+ * A fully responsive "square" container that fits phone width,
+ * with a 1:1 aspect ratio (via paddingTop hack).
+ * No snapping left. Freed up panning/zoom for phone.
  */
 export default function MapView({ nodeSequence }) {
   const [renderPoints, setRenderPoints] = useState([]);
@@ -85,10 +86,9 @@ export default function MapView({ nodeSequence }) {
   const [arrowPos, setArrowPos] = useState({ x: 0, y: 0, angle: 0 });
   const animationRef = useRef(null);
 
-  // Build path + start/stop arrow animation
   useEffect(() => {
     if (!nodeSequence || nodeSequence.length === 0) {
-      // no path => clear data + stop anim
+      // Clear data if no path
       setRenderPoints([]);
       setSegments([]);
       setArrowPos({ x: 0, y: 0, angle: 0 });
@@ -99,12 +99,12 @@ export default function MapView({ nodeSequence }) {
       return;
     }
 
-    // 1) scale coords
+    // 1) scale node coords
     const coords = nodeSequence.map((n) => [n.x, n.y]);
     const scaled = scaleCoordinatesForImage(coords);
     setRenderPoints(scaled);
 
-    // 2) build segments
+    // 2) build segments for arrow anim
     const segs = buildSegments(scaled);
     setSegments(segs);
 
@@ -113,9 +113,9 @@ export default function MapView({ nodeSequence }) {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
-    let startTime = performance.now();
+    const startTime = performance.now();
     const totalDist = segs.length ? segs[segs.length - 1].cumulativeDist : 0;
-    const duration = 8000; // 8sec
+    const duration = 8000; // 8s for full loop
 
     function animateArrow(timestamp) {
       let elapsed = timestamp - startTime;
@@ -135,79 +135,92 @@ export default function MapView({ nodeSequence }) {
     };
   }, [nodeSequence]);
 
-  // polypoints for path
+  // Prepare polyline string
   const pointsString = renderPoints.map((pt) => pt.join(",")).join(" ");
-  // arrow config
   const arrowSize = 16;
-  // your container
-  const containerSize = 512;
 
   return (
-    <div
-      style={{
-        width: containerSize + "px",
-        height: containerSize + "px",
-        margin: "0 auto",
-        borderRadius: "8px",
-        overflow: "hidden",
-        backgroundColor: "#ccc",
-      }}
-    >
-      {/* Freed up the pan/zoom constraints for phone */}
-      <TransformWrapper
-        centerContent={true}
-        limitToWrapperBounds={false}
-        minScale={0.5} // user can zoom out further if phone is smaller
-        maxScale={4}
-        initialScale={0.8} // slightly zoomed out initially
-      >
-        <TransformComponent>
-          <Box
-            sx={{
-              position: "relative",
-              width: containerSize,
-              height: containerSize,
-              backgroundImage: `url(${mapImage})`,
-              backgroundSize: "contain",
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "center",
-            }}
+    // 1) Outer container: max 512 wide, centered
+    <div style={{ width: "100%", maxWidth: "512px", margin: "0 auto" }}>
+      {/* 2) Aspect ratio trick: 1:1 square by paddingTop: "100%" */}
+      <div style={{ width: "100%", paddingTop: "100%", position: "relative" }}>
+        {/* 3) The absolute container that holds everything */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            overflow: "hidden",
+            borderRadius: "8px",
+            backgroundColor: "#ccc",
+          }}
+        >
+          {/* Freed up transform constraints => no snap. */}
+          <TransformWrapper
+            centerContent={false}
+            limitToWrapperBounds={false}
+            minScale={0.5}
+            maxScale={4}
+            initialScale={1}
           >
-            {/* If path is set, draw the line + arrow */}
-            {renderPoints.length > 0 && (
-              <svg
-                width={containerSize}
-                height={containerSize}
+            <TransformComponent>
+              {/* 
+                  This div is 512x512 in the 'virtual' coordinate space,
+                  but will scale/fit into the parent's aspect ratio container. 
+               */}
+              <div
                 style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  pointerEvents: "none",
+                  width: "100%",
+                  height: "100%",
+                  position: "relative",
+                  backgroundImage: `url(${mapImage})`,
+                  backgroundSize: "contain",
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "center",
                 }}
               >
-                <polyline
-                  points={pointsString}
-                  style={{ fill: "none", stroke: "blue", strokeWidth: 2.5 }}
-                />
-                <g
-                  transform={`
-                    translate(${arrowPos.x}, ${arrowPos.y})
-                    rotate(${arrowPos.angle})
-                    translate(${-arrowSize / 2}, ${-arrowSize / 2})
-                  `}
-                >
-                  <polygon
-                    points="0,0 16,8 0,16"
-                    fill="red"
-                    stroke="white"
-                    strokeWidth="1"
-                  />
-                </g>
-              </svg>
-            )}
-          </Box>
-        </TransformComponent>
-      </TransformWrapper>
+                {renderPoints.length > 0 && (
+                  // 4) The path overlay in an <svg>
+                  <svg
+                    width="100%"
+                    height="100%"
+                    // We'll use viewBox so the 512×512 lines are scaled to fill the container
+                    viewBox="0 0 512 512"
+                    preserveAspectRatio="xMidYMid meet"
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <polyline
+                      points={pointsString}
+                      style={{ fill: "none", stroke: "blue", strokeWidth: 2.5 }}
+                    />
+                    <g
+                      transform={`
+                        translate(${arrowPos.x}, ${arrowPos.y})
+                        rotate(${arrowPos.angle})
+                        translate(${-arrowSize / 2}, ${-arrowSize / 2})
+                      `}
+                    >
+                      <polygon
+                        points="0,0 16,8 0,16"
+                        fill="red"
+                        stroke="white"
+                        strokeWidth="1"
+                      />
+                    </g>
+                  </svg>
+                )}
+              </div>
+            </TransformComponent>
+          </TransformWrapper>
+        </div>
+      </div>
     </div>
   );
 }
