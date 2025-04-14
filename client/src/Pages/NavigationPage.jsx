@@ -1,4 +1,3 @@
-// src/Pages/NavigationPage.jsx
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -18,27 +17,37 @@ import { useNavigate, useLocation } from "react-router-dom";
 import QrScannerModal from "../components/QRScannerModal";
 import MapView from "./MapView";
 
+// 1) import from sensorUtils
+import { ROOM_COORDINATES } from "../utils/sensorUtils";
+
 export default function NavigationPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // user typed or scanned
   const [currentLocation, setCurrentLocation] = useState("");
   const [destination, setDestination] = useState("");
+
+  // show/hide the QR scanner
   const [showScanner, setShowScanner] = useState(false);
   const [scanError, setScanError] = useState(null);
   const [isInitializingScanner, setIsInitializingScanner] = useState(false);
 
+  // route returned from the backend
   const [instructions, setInstructions] = useState([]);
   const [nodeSequence, setNodeSequence] = useState([]);
 
+  // 2) we store initialPosition for PDR usage
+  const [initialPosition, setInitialPosition] = useState(null);
+
+  // if returning from OngoingNavigation with a prefilled destination
   useEffect(() => {
-    // If OngoingNavigation leads back here with a prefilled destination
     if (location.state?.destination) {
       setDestination(location.state.destination);
     }
   }, [location]);
 
-  // Demo rooms for the dropdown
+  // for your quick picks
   const dummyRooms = [
     "Room A101",
     "Room B203",
@@ -54,16 +63,15 @@ export default function NavigationPage() {
     room.toLowerCase().includes(destination.toLowerCase())
   );
 
+  // open camera
   const handleStartScan = async () => {
     try {
       setIsInitializingScanner(true);
       setScanError(null);
 
-      const permissions = await navigator.permissions.query({ name: "camera" });
-      if (permissions.state === "denied") {
-        throw new Error(
-          "Camera access blocked. Please enable in browser settings."
-        );
+      const perms = await navigator.permissions.query({ name: "camera" });
+      if (perms.state === "denied") {
+        throw new Error("Camera is blocked. Check settings.");
       }
       setShowScanner(true);
     } catch (error) {
@@ -73,16 +81,17 @@ export default function NavigationPage() {
     }
   };
 
+  // set the user’s current location from QR
   const handleScan = (data) => {
     setCurrentLocation(data);
     setShowScanner(false);
     setScanError(null);
   };
 
-  // The main "Get Directions" function
+  // call your backend to get directions
   const handleGetDirections = async () => {
     if (!currentLocation || !destination) {
-      setScanError("Please scan your location and type a destination.");
+      setScanError("Please provide current location & destination.");
       return;
     }
     try {
@@ -90,31 +99,26 @@ export default function NavigationPage() {
       setInstructions([]);
       setNodeSequence([]);
 
-      // Absolute URL for production
-      const response = await fetch(
-        "https://itdevprojectbackend.onrender.com/api/neo4j/calc-path",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            startId: currentLocation,
-            endId: destination,
-          }),
-        }
-      );
+      // 3) find campus coords for the user’s start location 
+      const startCoords = ROOM_COORDINATES[currentLocation];
+      if (!startCoords) {
+        throw new Error(`Unknown or unmapped location: ${currentLocation}`);
+      }
+      setInitialPosition(startCoords);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`);
+      // fetch route from the backend
+      const res = await fetch("https://itdevprojectbackend.onrender.com/api/neo4j/calc-path", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ startId: currentLocation, endId: destination }),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP Error: ${res.status}`);
       }
-      const data = await response.json();
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      if (!data.success) {
-        throw new Error("Path not found or unknown error.");
-      }
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      if (!data.success) throw new Error("Path not found or unknown error.");
 
-      // success
       setInstructions(data.instructions || []);
       setNodeSequence(data.nodeSequence || []);
     } catch (error) {
@@ -122,28 +126,24 @@ export default function NavigationPage() {
     }
   };
 
+  // final step => push to ongoing nav
   const handleStartNavigation = () => {
-    // Pass instructions, nodeSequence, destination to OngoingNavigation
     navigate("/ongoingnav", {
       state: {
         instructions,
         nodeSequence,
         destination,
+        // 4) pass the initialPosition for PDR
+        initialPosition,
       },
     });
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        background: "linear-gradient(to bottom, #fdfbfb, #ebedee)",
-        p: 2,
-      }}
-    >
+    <Box sx={{ minHeight: "100vh", background: "#f8f8f8", p: 2 }}>
       <Container maxWidth="sm">
         <Paper
-          elevation={4}
+          elevation={2}
           sx={{
             borderRadius: "16px",
             mb: 3,
@@ -156,7 +156,7 @@ export default function NavigationPage() {
             fontWeight: 500,
           }}
         >
-          {/* MapView always displayed, with or without path */}
+          {/* Show map even if no path (empty route => no line) */}
           <MapView nodeSequence={nodeSequence} />
         </Paper>
 
@@ -166,14 +166,13 @@ export default function NavigationPage() {
           </Typography>
         )}
 
-        {/* Current location */}
         <Typography variant="subtitle1" sx={{ mb: 1 }}>
           Where are you?
         </Typography>
         <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
           <TextField
             fullWidth
-            placeholder="Enter current location (or scan QR)"
+            placeholder="Enter or scan location"
             value={currentLocation}
             onChange={(e) => setCurrentLocation(e.target.value)}
           />
@@ -183,11 +182,10 @@ export default function NavigationPage() {
             onClick={handleStartScan}
             disabled={isInitializingScanner}
           >
-            {isInitializingScanner ? "Loading..." : "SCAN QR"}
+            {isInitializingScanner ? "Loading..." : "Scan QR"}
           </Button>
         </Box>
 
-        {/* Destination */}
         <Typography variant="subtitle1" sx={{ mb: 1 }}>
           Where do you want to go?
         </Typography>
@@ -206,10 +204,10 @@ export default function NavigationPage() {
           }}
         />
 
-        {/* Demo "found rooms" */}
+        {/* Quick picks */}
         <Grid container spacing={2}>
-          {filteredRooms.map((room, index) => (
-            <Grid item xs={6} sm={4} key={index}>
+          {filteredRooms.map((room) => (
+            <Grid item xs={6} sm={4} key={room}>
               <Button
                 variant="contained"
                 fullWidth
@@ -218,8 +216,8 @@ export default function NavigationPage() {
                   color: "#fff",
                   borderRadius: "12px",
                   boxShadow: 2,
-                  textTransform: "none",
                   height: 60,
+                  textTransform: "none",
                   ":hover": { bgcolor: "#00897b" },
                 }}
                 startIcon={<RoomPreferencesIcon />}
@@ -230,26 +228,18 @@ export default function NavigationPage() {
             </Grid>
           ))}
         </Grid>
-
         {filteredRooms.length === 0 && destination && (
-          <Typography
-            variant="body1"
-            align="center"
-            sx={{ mt: 4 }}
-            color="text.secondary"
-          >
+          <Typography variant="body1" align="center" sx={{ mt: 4 }} color="text.secondary">
             No matching rooms found
           </Typography>
         )}
 
-        {/* "Get Directions" */}
         <Box sx={{ textAlign: "center", mt: 3 }}>
           <Button variant="contained" onClick={handleGetDirections}>
-            GET DIRECTIONS
+            Get Directions
           </Button>
         </Box>
 
-        {/* Show instructions if we have them */}
         {instructions.length > 0 && (
           <Box sx={{ mt: 4 }}>
             <Typography variant="h6">Instructions:</Typography>
@@ -261,26 +251,18 @@ export default function NavigationPage() {
           </Box>
         )}
 
-        {/* Show "Start Navigation" if path is set */}
         {nodeSequence.length > 0 && (
           <Box sx={{ textAlign: "center", mt: 3 }}>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={handleStartNavigation}
-            >
+            <Button variant="outlined" onClick={handleStartNavigation}>
               Start Navigation
             </Button>
           </Box>
         )}
 
-        {/* QR Modal */}
+        {/* Scanner */}
         {showScanner && (
           <Box sx={{ mt: 4 }}>
-            <QrScannerModal
-              onScan={handleScan}
-              onClose={() => setShowScanner(false)}
-            />
+            <QrScannerModal onScan={handleScan} onClose={() => setShowScanner(false)} />
           </Box>
         )}
       </Container>

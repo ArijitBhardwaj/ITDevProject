@@ -1,10 +1,10 @@
-// src/Pages/MapView.jsx
 import React, { useEffect, useState, useRef } from "react";
 import { Box, GlobalStyles } from "@mui/material";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import mapImage from "../assets/vcc_floor1_grid.png";
+import { PedestrianDeadReckoning } from "../utils/sensorUtils"; // import PDR class
 
-/** Convert campus coords -> 512x512 image coords */
+// 1) scale route coords to image
 function scaleCoordinatesForImage(nodes) {
   return nodes.map(([x, y]) => {
     let scaledX = x * (256 / 20) + 256;
@@ -13,44 +13,41 @@ function scaleCoordinatesForImage(nodes) {
   });
 }
 
-/** Basic distance */
+// 2) path building
 function distance2D(x1, y1, x2, y2) {
   const dx = x2 - x1;
   const dy = y2 - y1;
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-/** Build arrow path segments */
 function buildSegments(points) {
   let segs = [];
   let cumulative = 0;
   for (let i = 0; i < points.length - 1; i++) {
-    let [x1, y1] = points[i];
-    let [x2, y2] = points[i + 1];
-    let length = distance2D(x1, y1, x2, y2);
+    const [x1, y1] = points[i];
+    const [x2, y2] = points[i + 1];
+    const length = distance2D(x1, y1, x2, y2);
     cumulative += length;
     segs.push({ x1, y1, x2, y2, length, cumulativeDist: cumulative });
   }
   return segs;
 }
 
-/** Return (x,y,angle) at dist along polyline */
-function getPointAtDistance(segments, dist) {
-  if (!segments.length) return { x: 0, y: 0, angle: 0 };
-  const totalLen = segments[segments.length - 1].cumulativeDist;
-  if (dist >= totalLen) {
-    let last = segments[segments.length - 1];
+function getPointAtDistance(segs, dist) {
+  if (!segs.length) return { x: 0, y: 0, angle: 0 };
+  const total = segs[segs.length - 1].cumulativeDist;
+  if (dist >= total) {
+    const last = segs[segs.length - 1];
     return {
       x: last.x2,
       y: last.y2,
       angle: angleBetween(last.x1, last.y1, last.x2, last.y2),
     };
   }
-  for (let i = 0; i < segments.length; i++) {
-    const seg = segments[i];
-    const startDist = i === 0 ? 0 : segments[i - 1].cumulativeDist;
-    const endDist = seg.cumulativeDist;
-    if (dist >= startDist && dist <= endDist) {
+  for (let i = 0; i < segs.length; i++) {
+    const seg = segs[i];
+    const startDist = i === 0 ? 0 : segs[i - 1].cumulativeDist;
+    if (dist >= startDist && dist <= seg.cumulativeDist) {
       let frac = (dist - startDist) / seg.length;
       let x = seg.x1 + (seg.x2 - seg.x1) * frac;
       let y = seg.y1 + (seg.y2 - seg.y1) * frac;
@@ -58,8 +55,7 @@ function getPointAtDistance(segments, dist) {
       return { x, y, angle };
     }
   }
-  // fallback
-  let last = segments[segments.length - 1];
+  const last = segs[segs.length - 1];
   return {
     x: last.x2,
     y: last.y2,
@@ -67,61 +63,48 @@ function getPointAtDistance(segments, dist) {
   };
 }
 
-/** angle in degrees from (x1,y1)->(x2,y2) */
 function angleBetween(x1, y1, x2, y2) {
-  const rad = Math.atan2(y2 - y1, x2 - x1);
-  return (rad * 180) / Math.PI;
+  return (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
 }
 
-/**
- * Props:
- *   nodeSequence - array of {x,y} for the path
- *   userX, userY, userHeading - real-time user location/orientation
- */
-export default function MapView({ nodeSequence, userX, userY, userHeading }) {
+export default function MapView({ nodeSequence, initialPosition }) {
+  // route points
   const [renderPoints, setRenderPoints] = useState([]);
   const [segments, setSegments] = useState([]);
   const [arrowPos, setArrowPos] = useState({ x: 0, y: 0, angle: 0 });
   const animationRef = useRef(null);
 
+  // PDR stuff
+  const pdrRef = useRef(null);
+  const [userMarker, setUserMarker] = useState({ x: 0, y: 0 });
+  const [userAngle, setUserAngle] = useState(0);
+  const [stepCount, setStepCount] = useState(0);
+
   const containerSize = 512;
 
-  // Convert the user location to scaled coords
-  const [userMarkerPos, setUserMarkerPos] = useState({ x: 0, y: 0 });
-
-  /**
-   * Build path arrow
-   */
+  // route building + animation
   useEffect(() => {
-    if (!nodeSequence || nodeSequence.length === 0) {
-      // Clear everything
+    if (!nodeSequence || !nodeSequence.length) {
       setRenderPoints([]);
       setSegments([]);
       setArrowPos({ x: 0, y: 0, angle: 0 });
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-        animationRef.current = null;
-      }
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
       return;
     }
 
-    // 1) scale coords
     const coords = nodeSequence.map((n) => [n.x, n.y]);
     const scaled = scaleCoordinatesForImage(coords);
     setRenderPoints(scaled);
 
-    // 2) build path segments
     const segs = buildSegments(scaled);
     setSegments(segs);
 
-    // 3) arrow anim
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
-    }
+    if (animationRef.current) cancelAnimationFrame(animationRef.current);
+
     let startTime = performance.now();
-    let totalDist = segs.length ? segs[segs.length - 1].cumulativeDist : 0;
-    let duration = 8000; // loop in 8s
+    const totalDist = segs.length ? segs[segs.length - 1].cumulativeDist : 0;
+    const duration = 8000;
 
     function animateArrow(timestamp) {
       let elapsed = timestamp - startTime;
@@ -134,31 +117,47 @@ export default function MapView({ nodeSequence, userX, userY, userHeading }) {
     animationRef.current = requestAnimationFrame(animateArrow);
 
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-        animationRef.current = null;
-      }
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
     };
   }, [nodeSequence]);
 
-  /**
-   * Convert userX,userY => scaled coords each render
-   */
+  // Start PDR if initialPosition is given (and presumably, sensors are allowed)
   useEffect(() => {
-    if (userX === undefined || userY === undefined) return;
-    // same scale formula:
-    let sx = userX * (256 / 20) + 256;
-    let sy = userY * (256 / 20) * -1 + 256;
-    setUserMarkerPos({ x: sx, y: sy });
-  }, [userX, userY]);
+    if (!initialPosition) return;
+
+    pdrRef.current = new PedestrianDeadReckoning(initialPosition);
+    pdrRef.current.startTracking();
+
+    const poll = setInterval(() => {
+      if (pdrRef.current) {
+        const { x, y } = pdrRef.current.position;
+        const heading = pdrRef.current.heading;
+        const sCount = pdrRef.current.stepCount;
+
+        // scale campus coords => image coords
+        let sx = x * (256 / 20) + 256;
+        let sy = y * (256 / 20) * -1 + 256;
+
+        setUserMarker({ x: sx, y: sy });
+        setUserAngle(heading);
+        setStepCount(sCount);
+      }
+    }, 500);
+
+    return () => {
+      clearInterval(poll);
+      pdrRef.current?.stopTracking();
+    };
+  }, [initialPosition]);
+
+  // for phone pinch/zoom
+  const handleTouchStart = (e) => {
+    if (e.touches.length > 1) e.preventDefault();
+  };
 
   const pointsString = renderPoints.map((pt) => pt.join(",")).join(" ");
   const arrowSize = 16;
-
-  const handleTouchStart = (e) => {
-    // optional to prevent pinch safari issues
-    if (e.touches.length > 1) e.preventDefault();
-  };
 
   return (
     <div>
@@ -166,7 +165,6 @@ export default function MapView({ nodeSequence, userX, userY, userHeading }) {
         styles={{
           body: {
             "-webkit-user-select": "none",
-            "user-select": "none",
           },
         }}
       />
@@ -175,7 +173,6 @@ export default function MapView({ nodeSequence, userX, userY, userHeading }) {
         style={{
           width: "100%",
           maxWidth: "512px",
-          // for height: let's keep 80vh or so:
           height: "80vh",
           margin: "0 auto",
           borderRadius: "8px",
@@ -191,25 +188,20 @@ export default function MapView({ nodeSequence, userX, userY, userHeading }) {
           maxScale={4}
           initialScale={1}
           limitToWrapperBounds
-          doubleClick={{ disabled: true }}
         >
-          <TransformComponent
-            wrapperStyle={{ width: "100%", height: "100%" }}
-            contentStyle={{ transition: "transform 0.15s ease-out" }}
-          >
-            {/* The background map is 512x512, but scaled as user zooms */}
+          <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
             <Box
               sx={{
+                position: "relative",
                 width: containerSize,
                 height: containerSize,
-                position: "relative",
                 backgroundImage: `url(${mapImage})`,
                 backgroundSize: "contain",
                 backgroundRepeat: "no-repeat",
                 backgroundPosition: "center",
               }}
             >
-              {/* If path exists, draw it + arrow */}
+              {/* The route line + red arrow */}
               {renderPoints.length > 0 && (
                 <svg
                   width={containerSize}
@@ -225,7 +217,6 @@ export default function MapView({ nodeSequence, userX, userY, userHeading }) {
                     points={pointsString}
                     style={{ fill: "none", stroke: "blue", strokeWidth: 2.5 }}
                   />
-                  {/* arrow animation */}
                   <g
                     transform={`
                       translate(${arrowPos.x}, ${arrowPos.y})
@@ -243,7 +234,7 @@ export default function MapView({ nodeSequence, userX, userY, userHeading }) {
                 </svg>
               )}
 
-              {/* Real-time user location marker */}
+              {/* PDR-based user marker (green) */}
               <svg
                 width={containerSize}
                 height={containerSize}
@@ -256,27 +247,34 @@ export default function MapView({ nodeSequence, userX, userY, userHeading }) {
               >
                 <g
                   transform={`
-                    translate(${userMarkerPos.x}, ${userMarkerPos.y})
-                    rotate(${userHeading || 0})
-                    translate(-8, -8)
+                    translate(${userMarker.x}, ${userMarker.y})
+                    rotate(${userAngle})
+                    translate(-8,-8)
                   `}
                 >
-                  {/* A small arrow or circle for the user */}
-                  <circle r="8" fill="green" opacity="0.7" />
-                  <rect
-                    width="4"
-                    height="12"
-                    fill="black"
-                    x={2}
-                    y={-4}
-                    transform="rotate(90,4,6)"
-                  />
+                  <circle r="8" fill="limegreen" opacity="0.8" />
+                  {/* A small pointer triangle pointing "forward" */}
+                  <polygon points="8,-2 16,8 8,18" fill="black" opacity="0.6" />
                 </g>
               </svg>
             </Box>
           </TransformComponent>
         </TransformWrapper>
       </div>
+
+      {/* Debug row */}
+      {initialPosition && (
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: 8,
+            fontSize: "0.9rem",
+            color: "#555",
+          }}
+        >
+          Steps: {stepCount} | Heading: {userAngle.toFixed(1)}°
+        </div>
+      )}
     </div>
   );
 }
