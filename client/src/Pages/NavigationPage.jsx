@@ -128,7 +128,6 @@ export default function NavigationPage() {
   return (
     <Box sx={{ minHeight: "100vh", background: "#f8f8f8", p: 2 }}>
       <Container maxWidth="sm">
-        {/* Updated map container */}
         <Paper
           elevation={2}
           sx={{
@@ -142,8 +141,7 @@ export default function NavigationPage() {
             color: "#777",
             fontWeight: 500,
             width: "100%",
-            height: "250px", // Fixed height
-            touchAction: "none", // Disable touch
+            height: "70vh",
           }}
         >
           <MapView nodeSequence={nodeSequence} />

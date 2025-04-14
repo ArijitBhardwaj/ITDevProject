@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Box, Card, Popover, Typography, GlobalStyles } from "@mui/material";
+import { Box, GlobalStyles } from "@mui/material";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import mapImage from "../assets/vcc_floor1_grid.png";
 import { PedestrianDeadReckoning } from "../utils/sensorUtils";
 
-// Coordinate scaling functions
 function scaleCoordinatesForImage(nodes) {
   return nodes.map(([x, y]) => {
     let scaledX = x * (256 / 20) + 256;
@@ -60,70 +59,18 @@ function angleBetween(x1, y1, x2, y2) {
   return (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
 }
 
-// ==NEW==
-// Added nodeTags
-export default function MapView({
-  nodeSequence,
-  nodeTags = [],
-  initialPosition,
-}) {
+export default function MapView({ nodeSequence, initialPosition }) {
   const [renderPoints, setRenderPoints] = useState([]);
   const [segments, setSegments] = useState([]);
   const [arrowPos, setArrowPos] = useState({ x: 0, y: 0, angle: 0 });
   const [userMarker, setUserMarker] = useState({ x: 0, y: 0 });
   const [userAngle, setUserAngle] = useState(0);
   const [stepCount, setStepCount] = useState(0);
+  const [isUserInteracting, setIsUserInteracting] = useState(false);
   const animationRef = useRef(null);
   const pdrRef = useRef(null);
-  const containerSize = 512;
   const transformRef = useRef();
 
-  // ==NEW==
-  // ================== FOR POPUPS ==================
-  const [nodeTagPoints, setNodeTagPoints] = useState([]);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [popoverNodeTarget, setPopoverNodeTarget] = useState(null);
-
-  const openPopover = Boolean(anchorEl);
-  const idPopover = openPopover ? "simple-popover" : undefined;
-
-  const handleClick = (node) => (event) => {
-    setAnchorEl(event.currentTarget);
-    setPopoverNodeTarget(node);
-  };
-
-  function handleClose() {
-    setAnchorEl(null);
-  }
-
-  const [scaledFlag, setScaledFlag] = useState(false);
-
-  function scaleNodeTagsForImage(nodes) {
-    if (!scaledFlag) {
-      const temp = nodes.map((node) => {
-        node.coordinates.x = parseFloat(node.coordinates.x) * (256 / 20) + 256;
-        node.coordinates.y =
-          parseFloat(node.coordinates.y) * (256 / 20) * -1 + 256;
-        return node;
-      });
-      // console.log(temp)
-      if (temp.length > 0) setScaledFlag(true);
-      return temp;
-    } else {
-      return nodes;
-    }
-  }
-
-  // ================== FOR POPUPS ==================
-
-  // Handle initial centering
-  useEffect(() => {
-    if (transformRef.current) {
-      transformRef.current.centerView(0.95, 0);
-    }
-  }, []);
-
-  // Path animation effect
   useEffect(() => {
     if (!nodeSequence?.length) {
       setRenderPoints([]);
@@ -133,9 +80,7 @@ export default function MapView({
       return;
     }
 
-    const scaled = scaleCoordinatesForImage(
-      nodeSequence.map((n) => [n.x, n.y])
-    );
+    const scaled = scaleCoordinatesForImage(nodeSequence.map(n => [n.x, n.y]));
     setRenderPoints(scaled);
     const segs = buildSegments(scaled);
     setSegments(segs);
@@ -155,7 +100,6 @@ export default function MapView({
     return () => cancelAnimationFrame(animationRef.current);
   }, [nodeSequence]);
 
-  // PDR tracking effect
   useEffect(() => {
     if (!initialPosition) return;
 
@@ -178,65 +122,42 @@ export default function MapView({
     };
   }, [initialPosition]);
 
-  // ==NEW==
-  // Initialise clickable node tags
-  useEffect(() => {
-    if (!nodeTags?.length) {
-      setNodeTagPoints([]);
-      return;
-    }
-    const scaledNodeTags = scaleNodeTagsForImage(nodeTags);
-    setNodeTagPoints(scaledNodeTags);
-  }, []);
-
-  const pointsString = renderPoints.map((p) => p.join(",")).join(" ");
+  const pointsString = renderPoints.map(p => p.join(",")).join(" ");
   const arrowSize = 16;
 
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: "512px",
-        height: "80vh",
-        margin: "0 auto",
-        borderRadius: "8px",
-        overflow: "hidden",
-        backgroundColor: "#ccc",
-        position: "relative",
-        display: "flex",
-        justifyContent: "center",
-      }}
-    >
-      <GlobalStyles
-        styles={{
-          body: {
-            "-webkit-user-select": "none",
-            "-moz-user-select": "none",
-            "-ms-user-select": "none",
-            "user-select": "none",
-          },
-        }}
-      />
+    <div style={{
+      width: "100%",
+      height: "100%",
+      margin: "0 auto",
+      borderRadius: "8px",
+      overflow: "hidden",
+      backgroundColor: "#ccc",
+      position: "relative"
+    }}>
+      <GlobalStyles styles={{
+        body: { 
+          "-webkit-user-select": "none",
+          "-moz-user-select": "none",
+          "-ms-user-select": "none",
+          "user-select": "none"
+        }
+      }} />
 
-      {/* Debug Panel */}
       {initialPosition && (
-        <div
-          style={{
-            position: "absolute",
-            top: 10,
-            left: 10,
-            background: "rgba(255,255,255,0.9)",
-            padding: 8,
-            borderRadius: 4,
-            zIndex: 1000,
-            fontSize: "0.9rem",
-          }}
-        >
+        <div style={{
+          position: "absolute",
+          top: 10,
+          left: 10,
+          background: "rgba(255,255,255,0.9)",
+          padding: 8,
+          borderRadius: 4,
+          zIndex: 1000,
+          fontSize: "0.9rem"
+        }}>
           <div>Steps: {stepCount}</div>
           <div>Heading: {userAngle.toFixed(1)}°</div>
-          <div>
-            Position: ({userMarker.x.toFixed(1)}, {userMarker.y.toFixed(1)})
-          </div>
+          <div>Position: ({userMarker.x.toFixed(1)}, {userMarker.y.toFixed(1)})</div>
         </div>
       )}
 
@@ -249,210 +170,92 @@ export default function MapView({
         initialPositionY={256}
         limitToWrapperBounds
         doubleClick={{ disabled: true }}
-        pinch={{ step: 50 }}
+        onPanningStart={() => setIsUserInteracting(true)}
+        onZoomStart={() => setIsUserInteracting(true)}
+        onReset={() => setIsUserInteracting(false)}
         centerOnInit={true}
       >
-        {({ zoomIn, zoomOut, resetTransform, ...rest }) => (
+        {({ zoomIn, zoomOut, resetTransform }) => (
           <>
-            {/* Zoom Controls */}
-            <div
-              style={{
-                position: "absolute",
-                right: 10,
-                bottom: 10,
-                zIndex: 1000,
-                display: "flex",
-                gap: "8px",
-              }}
-            >
-              <button
-                onClick={() => zoomIn()}
-                style={{
-                  padding: "8px",
-                  background: "#fff",
-                  border: "2px solid #1976d2",
-                  borderRadius: "50%",
-                  width: "40px",
-                  height: "40px",
-                  fontSize: "1.2rem",
-                  color: "#1976d2",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                }}
-              >
-                +
-              </button>
-              <button
-                onClick={() => zoomOut()}
-                style={{
-                  padding: "8px",
-                  background: "#fff",
-                  border: "2px solid #1976d2",
-                  borderRadius: "50%",
-                  width: "40px",
-                  height: "40px",
-                  fontSize: "1.2rem",
-                  color: "#1976d2",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                }}
-              >
-                -
-              </button>
-              <button
-                onClick={() => {
-                  resetTransform();
-                  setTimeout(() => rest.centerView(0.95), 10);
-                }}
-                style={{
-                  padding: "8px",
-                  background: "#fff",
-                  border: "2px solid #1976d2",
-                  borderRadius: "50%",
-                  width: "40px",
-                  height: "40px",
-                  fontSize: "1.2rem",
-                  color: "#1976d2",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                }}
-              >
-                ⟲
-              </button>
+            <div style={{
+              position: 'absolute',
+              right: 10,
+              bottom: 10,
+              zIndex: 1000,
+              display: 'flex',
+              gap: '8px'
+            }}>
+              <button onClick={() => zoomIn()} style={{ 
+                padding: '8px',
+                background: '#fff',
+                border: '2px solid #1976d2',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                fontSize: '1.2rem',
+                color: '#1976d2',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              }}>+</button>
+              <button onClick={() => zoomOut()} style={{ 
+                padding: '8px',
+                background: '#fff',
+                border: '2px solid #1976d2',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                fontSize: '1.2rem',
+                color: '#1976d2',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              }}>-</button>
+              <button onClick={() => {
+                resetTransform();
+                setIsUserInteracting(false);
+              }} style={{ 
+                padding: '8px',
+                background: '#fff',
+                border: '2px solid #1976d2',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                fontSize: '1.2rem',
+                color: '#1976d2',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+              }}>⟲</button>
             </div>
 
             <TransformComponent
               wrapperStyle={{
                 width: "100%",
                 height: "100%",
-                touchAction: "manipulation",
+                touchAction: isUserInteracting ? "auto" : "manipulation"
               }}
               contentStyle={{ transition: "transform 0.15s ease-out" }}
             >
-              <Box
-                sx={{
-                  width: 512,
-                  height: 512,
-                  backgroundImage: `url(${mapImage})`,
-                  backgroundSize: "contain",
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "center",
-                  imageRendering: "crisp-edges",
-                }}
-              >
-                {/* Navigation Path */}
+              <Box sx={{
+                width: 512,
+                height: 512,
+                backgroundImage: `url(${mapImage})`,
+                backgroundSize: "contain",
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "center",
+                imageRendering: "crisp-edges"
+              }}>
                 {renderPoints.length > 0 && (
-                  <svg
-                    width={512}
-                    height={512}
-                    style={{ position: "absolute", top: 0, left: 0 }}
-                  >
-                    <polyline
-                      points={pointsString}
-                      fill="none"
-                      stroke="blue"
-                      strokeWidth={2.5}
-                    />
-                    <g
-                      transform={`translate(${arrowPos.x},${arrowPos.y}) rotate(${arrowPos.angle})`}
-                    >
-                      <polygon
-                        points="0,0 16,8 0,16"
-                        fill="red"
-                        stroke="white"
-                        strokeWidth={1}
-                        transform={`translate(-${arrowSize / 2},-${
-                          arrowSize / 2
-                        })`}
-                      />
+                  <svg width={512} height={512} style={{ position: "absolute", top: 0, left: 0 }}>
+                    <polyline points={pointsString} fill="none" stroke="blue" strokeWidth={2.5} />
+                    <g transform={`translate(${arrowPos.x},${arrowPos.y}) rotate(${arrowPos.angle})`}>
+                      <polygon points="0,0 16,8 0,16" fill="red" stroke="white" strokeWidth={1} 
+                        transform={`translate(-${arrowSize/2},-${arrowSize/2})`} />
                     </g>
                   </svg>
                 )}
 
-                {/* ==NEW== */}
-                <Popover
-                  id={idPopover}
-                  open={openPopover}
-                  anchorEl={anchorEl}
-                  onClose={handleClose}
-                  anchorOrigin={{
-                    vertical: "bottom",
-                    horizontal: "left",
-                  }}
-                >
-                  <Card sx={{ padding: "5px", width: "200px" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-around",
-                      }}
-                    >
-                      <Typography>
-                        {" "}
-                        {popoverNodeTarget
-                          ? popoverNodeTarget.name.charAt(0).toUpperCase() +
-                            popoverNodeTarget.name.slice(1)
-                          : ""}{" "}
-                      </Typography>
-                      <Typography>
-                        {" "}
-                        {popoverNodeTarget ? popoverNodeTarget.number : ""}{" "}
-                      </Typography>
-                    </div>
-                    <Typography sx={{ textAlign: "center" }}>
-                      {" "}
-                      {popoverNodeTarget
-                        ? popoverNodeTarget.description
-                        : ""}{" "}
-                    </Typography>
-                  </Card>
-                </Popover>
-
-                {/* ==NEW== */}
-                {/* Clickable tags for nodes */}
-                {nodeTagPoints.length > 0 && (
-                  <svg
-                    key={"nodeTagsSVG"}
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="renderedPath"
-                    width={512}
-                    height={512}
-                  >
-                    {nodeTagPoints.map((node, index) => (
-                      <>
-                        <circle
-                          key={node}
-                          cx={node.coordinates.x}
-                          cy={node.coordinates.y}
-                          // width={12} height={12}
-                          r={6}
-                          style={{
-                            fill: "orange",
-                            stroke: "blue",
-                            opacity: "0.5",
-                          }}
-                          onClick={(e) => handleClick(node)(e)}
-                        />
-                      </>
-                    ))}
-                  </svg>
-                )}
-
-                {/* User Position Marker */}
                 {initialPosition && (
-                  <svg
-                    width={512}
-                    height={512}
-                    style={{ position: "absolute", top: 0, left: 0 }}
-                  >
+                  <svg width={512} height={512} style={{ position: "absolute", top: 0, left: 0 }}>
                     <g transform={`translate(${userMarker.x},${userMarker.y})`}>
                       <circle r="10" fill="limegreen" opacity={0.8} />
-                      <line
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="-25"
-                        stroke="darkgreen"
-                        strokeWidth={4}
-                        transform={`rotate(${userAngle})`}
-                      />
+                      <line x1="0" y1="0" x2="0" y2="-25" stroke="darkgreen" strokeWidth={4} 
+                        transform={`rotate(${userAngle})`} />
                     </g>
                   </svg>
                 )}

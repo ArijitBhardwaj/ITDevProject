@@ -115,16 +115,14 @@ export default function OngoingNavigation() {
         </Box>
       )}
 
-      {/* Updated MapView container */}
       <Box
         sx={{
           display: "flex",
           justifyContent: "center",
           mb: 3,
           width: "100%",
-          height: "300px", // Fixed height
-          overflow: "hidden", // Prevent dragging
-          touchAction: "none", // Disable touch gestures
+          height: "70vh",
+          overflow: "hidden",
         }}
       >
         <MapView
