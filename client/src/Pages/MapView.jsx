@@ -4,7 +4,7 @@ import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import mapImage from "../assets/vcc_floor1_grid.png";
 import { PedestrianDeadReckoning } from "../utils/sensorUtils";
 
-// Coordinate scaling functions remain the same
+// Coordinate scaling functions
 function scaleCoordinatesForImage(nodes) {
   return nodes.map(([x, y]) => {
     let scaledX = x * (256 / 20) + 256;
@@ -14,76 +14,58 @@ function scaleCoordinatesForImage(nodes) {
 }
 
 function distance2D(x1, y1, x2, y2) {
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  return Math.sqrt(dx * dx + dy * dy);
+  return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
 }
 
 function buildSegments(points) {
   let segments = [];
   let cumulative = 0;
-
   for (let i = 0; i < points.length - 1; i++) {
     const [x1, y1] = points[i];
     const [x2, y2] = points[i + 1];
     const length = distance2D(x1, y1, x2, y2);
     cumulative += length;
-
-    segments.push({
-      x1,
-      y1,
-      x2,
-      y2,
-      length,
-      cumulativeDist: cumulative,
-    });
+    segments.push({ x1, y1, x2, y2, length, cumulativeDist: cumulative });
   }
   return segments;
 }
 
 function getPointAtDistance(segments, dist) {
-  if (segments.length === 0) return { x: 0, y: 0, angle: 0 };
-  const totalLength = segments[segments.length - 1].cumulativeDist;
-
-  if (dist >= totalLength) {
-    let last = segments[segments.length - 1];
+  if (!segments.length) return { x: 0, y: 0, angle: 0 };
+  const total = segments[segments.length - 1].cumulativeDist;
+  if (dist >= total) {
+    const last = segments[segments.length - 1];
     return {
       x: last.x2,
       y: last.y2,
       angle: angleBetween(last.x1, last.y1, last.x2, last.y2),
     };
   }
-
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i];
     const startDist = i === 0 ? 0 : segments[i - 1].cumulativeDist;
-    const endDist = seg.cumulativeDist;
-
-    if (dist >= startDist && dist <= endDist) {
-      const segFrac = (dist - startDist) / seg.length;
-      const x = seg.x1 + (seg.x2 - seg.x1) * segFrac;
-      const y = seg.y1 + (seg.y2 - seg.y1) * segFrac;
-      const angle = angleBetween(seg.x1, seg.y1, seg.x2, seg.y2);
-      return { x, y, angle };
+    if (dist >= startDist && dist <= seg.cumulativeDist) {
+      const frac = (dist - startDist) / seg.length;
+      return {
+        x: seg.x1 + (seg.x2 - seg.x1) * frac,
+        y: seg.y1 + (seg.y2 - seg.y1) * frac,
+        angle: angleBetween(seg.x1, seg.y1, seg.x2, seg.y2),
+      };
     }
   }
-
-  let last = segments[segments.length - 1];
-  return {
-    x: last.x2,
-    y: last.y2,
-    angle: angleBetween(last.x1, last.y1, last.x2, last.y2),
-  };
+  return segments[segments.length - 1];
 }
 
 function angleBetween(x1, y1, x2, y2) {
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const rad = Math.atan2(dy, dx);
-  return (rad * 180) / Math.PI;
+  return (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
 }
 
 export default function MapView({ nodeSequence, initialPosition }) {
+  const containerRef = useRef(null);
+  const [containerSize, setContainerSize] = useState({
+    width: 512,
+    height: 512,
+  });
   const [renderPoints, setRenderPoints] = useState([]);
   const [segments, setSegments] = useState([]);
   const [arrowPos, setArrowPos] = useState({ x: 0, y: 0, angle: 0 });
@@ -92,9 +74,24 @@ export default function MapView({ nodeSequence, initialPosition }) {
   const [stepCount, setStepCount] = useState(0);
   const animationRef = useRef(null);
   const pdrRef = useRef(null);
-  const containerSize = 512;
 
-  // Main animation effect
+  // Responsive container sizing
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        const { width } = containerRef.current.getBoundingClientRect();
+        setContainerSize({
+          width,
+          height: Math.min(width, window.innerHeight * 0.8),
+        });
+      }
+    };
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
+
+  // Path animation
   useEffect(() => {
     if (!nodeSequence?.length) {
       setRenderPoints([]);
@@ -123,11 +120,10 @@ export default function MapView({ nodeSequence, initialPosition }) {
       animationRef.current = requestAnimationFrame(animate);
     };
     animationRef.current = requestAnimationFrame(animate);
-
     return () => cancelAnimationFrame(animationRef.current);
   }, [nodeSequence]);
 
-  // PDR tracking effect
+  // PDR tracking
   useEffect(() => {
     if (!initialPosition) return;
 
@@ -138,7 +134,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
       if (pdrRef.current) {
         const scaledX = pdrRef.current.position.x * (256 / 20) + 256;
         const scaledY = pdrRef.current.position.y * (256 / 20) * -1 + 256;
-
         setUserMarker({ x: scaledX, y: scaledY });
         setUserAngle(pdrRef.current.heading);
         setStepCount(pdrRef.current.stepCount);
@@ -156,6 +151,7 @@ export default function MapView({ nodeSequence, initialPosition }) {
 
   return (
     <div
+      ref={containerRef}
       style={{
         width: "100%",
         maxWidth: "512px",
@@ -165,8 +161,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
         overflow: "hidden",
         backgroundColor: "#ccc",
         position: "relative",
-        display: "flex", // Added for proper centering
-        justifyContent: "center", // Ensures content stays centered
       }}
     >
       <GlobalStyles
@@ -176,14 +170,11 @@ export default function MapView({ nodeSequence, initialPosition }) {
             "-moz-user-select": "none",
             "-ms-user-select": "none",
             "user-select": "none",
-          },
-          button: {
-            "touch-action": "manipulation",
+            "touch-action": "none",
           },
         }}
       />
 
-      {/* Debug Panel */}
       {initialPosition && (
         <div
           style={{
@@ -206,18 +197,17 @@ export default function MapView({ nodeSequence, initialPosition }) {
       )}
 
       <TransformWrapper
-        minScale={1}
+        minScale={0.8}
         maxScale={4}
-        initialScale={1}
-        initialPositionX={containerSize / 2}
-        initialPositionY={containerSize / 2}
+        initialScale={0.95}
+        initialPositionX={256}
+        initialPositionY={256}
         limitToWrapperBounds
         doubleClick={{ disabled: true }}
         pinch={{ step: 50 }}
       >
         {({ zoomIn, zoomOut, resetTransform }) => (
           <>
-            {/* Mobile Controls */}
             <div
               style={{
                 position: "absolute",
@@ -280,19 +270,16 @@ export default function MapView({ nodeSequence, initialPosition }) {
 
             <TransformComponent
               wrapperStyle={{
-                width: "100%",
-                height: "100%",
-                touchAction: "manipulation",
+                width: containerSize.width,
+                height: containerSize.height,
+                touchAction: "none",
               }}
-              contentStyle={{
-                transition: "transform 0.15s ease-out",
-              }}
+              contentStyle={{ transition: "transform 0.15s ease-out" }}
             >
               <Box
                 sx={{
-                  position: "relative",
-                  width: containerSize,
-                  height: containerSize,
+                  width: 512,
+                  height: 512,
                   backgroundImage: `url(${mapImage})`,
                   backgroundSize: "contain",
                   backgroundRepeat: "no-repeat",
@@ -300,60 +287,49 @@ export default function MapView({ nodeSequence, initialPosition }) {
                   imageRendering: "crisp-edges",
                 }}
               >
-                {/* Navigation Path */}
                 {renderPoints.length > 0 && (
                   <svg
-                    width={containerSize}
-                    height={containerSize}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      pointerEvents: "none",
-                    }}
+                    width={512}
+                    height={512}
+                    style={{ position: "absolute", top: 0, left: 0 }}
                   >
                     <polyline
                       points={pointsString}
-                      style={{ fill: "none", stroke: "blue", strokeWidth: 2.5 }}
+                      fill="none"
+                      stroke="blue"
+                      strokeWidth={2.5}
                     />
                     <g
-                      transform={`
-                        translate(${arrowPos.x},${arrowPos.y})
-                        rotate(${arrowPos.angle})
-                        translate(-${arrowSize / 2},-${arrowSize / 2})
-                      `}
+                      transform={`translate(${arrowPos.x},${arrowPos.y}) rotate(${arrowPos.angle})`}
                     >
                       <polygon
                         points="0,0 16,8 0,16"
                         fill="red"
                         stroke="white"
-                        strokeWidth="1"
+                        strokeWidth={1}
+                        transform={`translate(-${arrowSize / 2},-${
+                          arrowSize / 2
+                        })`}
                       />
                     </g>
                   </svg>
                 )}
 
-                {/* User Position Marker */}
                 {initialPosition && (
                   <svg
-                    width={containerSize}
-                    height={containerSize}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      pointerEvents: "none",
-                    }}
+                    width={512}
+                    height={512}
+                    style={{ position: "absolute", top: 0, left: 0 }}
                   >
                     <g transform={`translate(${userMarker.x},${userMarker.y})`}>
-                      <circle r="10" fill="limegreen" opacity="0.8" />
+                      <circle r="10" fill="limegreen" opacity={0.8} />
                       <line
                         x1="0"
                         y1="0"
                         x2="0"
                         y2="-25"
                         stroke="darkgreen"
-                        strokeWidth="4"
+                        strokeWidth={4}
                         transform={`rotate(${userAngle})`}
                       />
                     </g>
