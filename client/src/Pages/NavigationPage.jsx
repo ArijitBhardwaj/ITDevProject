@@ -1,5 +1,4 @@
 // src/Pages/NavigationPage.jsx
-
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -32,8 +31,8 @@ export default function NavigationPage() {
   const [instructions, setInstructions] = useState([]);
   const [nodeSequence, setNodeSequence] = useState([]);
 
-  // If OngoingNavigation leads back here with a prefilled destination
   useEffect(() => {
+    // If OngoingNavigation leads back here with a prefilled destination
     if (location.state?.destination) {
       setDestination(location.state.destination);
     }
@@ -91,7 +90,7 @@ export default function NavigationPage() {
       setInstructions([]);
       setNodeSequence([]);
 
-      // Check your server IP/port below
+      // Absolute URL for production
       const response = await fetch(
         "https://itdevprojectbackend.onrender.com/api/neo4j/calc-path",
         {

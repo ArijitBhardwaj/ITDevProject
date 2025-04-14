@@ -6,7 +6,7 @@ const RENDER_BACKEND_URL = "https://itdevprojectbackend.onrender.com/";
 
 export default defineConfig({
   // Ensures your app’s assets work correctly when hosted at /ITDevProject/ on GitHub Pages
-  base: "/ITDevProject/",
+  base: "/ITDevProject/", 
   plugins: [react()],
 
   server: {

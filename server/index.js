@@ -11,7 +11,8 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "http://192.168.1.67:5173", // Add your laptop's IP if needed
+      "http://192.168.1.67:5173",
+      "https://arijitbhardwaj.github.io", // Add your laptop's IP if needed
     ],
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"],
