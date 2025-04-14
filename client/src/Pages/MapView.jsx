@@ -4,17 +4,19 @@ import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import mapImage from "../assets/vcc_floor1_grid.png";
 import { PedestrianDeadReckoning } from "../utils/sensorUtils";
 
-// Coordinate scaling for VCC floor plan
+// Coordinate scaling functions remain the same
 function scaleCoordinatesForImage(nodes) {
   return nodes.map(([x, y]) => {
-    const scaledX = x * (256 / 20) + 256;
-    const scaledY = y * (256 / 20) * -1 + 256;
+    let scaledX = x * (256 / 20) + 256;
+    let scaledY = y * (256 / 20) * -1 + 256;
     return [scaledX, scaledY];
   });
 }
 
 function distance2D(x1, y1, x2, y2) {
-  return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
 function buildSegments(points) {
@@ -26,17 +28,25 @@ function buildSegments(points) {
     const [x2, y2] = points[i + 1];
     const length = distance2D(x1, y1, x2, y2);
     cumulative += length;
-    segments.push({ x1, y1, x2, y2, length, cumulativeDist: cumulative });
+
+    segments.push({
+      x1,
+      y1,
+      x2,
+      y2,
+      length,
+      cumulativeDist: cumulative,
+    });
   }
   return segments;
 }
 
 function getPointAtDistance(segments, dist) {
-  if (!segments.length) return { x: 0, y: 0, angle: 0 };
-  const total = segments[segments.length - 1].cumulativeDist;
+  if (segments.length === 0) return { x: 0, y: 0, angle: 0 };
+  const totalLength = segments[segments.length - 1].cumulativeDist;
 
-  if (dist >= total) {
-    const last = segments[segments.length - 1];
+  if (dist >= totalLength) {
+    let last = segments[segments.length - 1];
     return {
       x: last.x2,
       y: last.y2,
@@ -47,20 +57,30 @@ function getPointAtDistance(segments, dist) {
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i];
     const startDist = i === 0 ? 0 : segments[i - 1].cumulativeDist;
-    if (dist >= startDist && dist <= seg.cumulativeDist) {
-      const frac = (dist - startDist) / seg.length;
-      return {
-        x: seg.x1 + (seg.x2 - seg.x1) * frac,
-        y: seg.y1 + (seg.y2 - seg.y1) * frac,
-        angle: angleBetween(seg.x1, seg.y1, seg.x2, seg.y2),
-      };
+    const endDist = seg.cumulativeDist;
+
+    if (dist >= startDist && dist <= endDist) {
+      const segFrac = (dist - startDist) / seg.length;
+      const x = seg.x1 + (seg.x2 - seg.x1) * segFrac;
+      const y = seg.y1 + (seg.y2 - seg.y1) * segFrac;
+      const angle = angleBetween(seg.x1, seg.y1, seg.x2, seg.y2);
+      return { x, y, angle };
     }
   }
-  return segments[segments.length - 1];
+
+  let last = segments[segments.length - 1];
+  return {
+    x: last.x2,
+    y: last.y2,
+    angle: angleBetween(last.x1, last.y1, last.x2, last.y2),
+  };
 }
 
 function angleBetween(x1, y1, x2, y2) {
-  return (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const rad = Math.atan2(dy, dx);
+  return (rad * 180) / Math.PI;
 }
 
 export default function MapView({ nodeSequence, initialPosition }) {
@@ -74,7 +94,7 @@ export default function MapView({ nodeSequence, initialPosition }) {
   const pdrRef = useRef(null);
   const containerSize = 512;
 
-  // Path animation
+  // Main animation effect
   useEffect(() => {
     if (!nodeSequence?.length) {
       setRenderPoints([]);
@@ -107,7 +127,7 @@ export default function MapView({ nodeSequence, initialPosition }) {
     return () => cancelAnimationFrame(animationRef.current);
   }, [nodeSequence]);
 
-  // PDR initialization
+  // PDR tracking effect
   useEffect(() => {
     if (!initialPosition) return;
 
@@ -145,12 +165,21 @@ export default function MapView({ nodeSequence, initialPosition }) {
         overflow: "hidden",
         backgroundColor: "#ccc",
         position: "relative",
+        display: "flex", // Added for proper centering
+        justifyContent: "center", // Ensures content stays centered
       }}
     >
       <GlobalStyles
         styles={{
-          body: { "-webkit-user-select": "none" },
-          button: { "touch-action": "manipulation" },
+          body: {
+            "-webkit-user-select": "none",
+            "-moz-user-select": "none",
+            "-ms-user-select": "none",
+            "user-select": "none",
+          },
+          button: {
+            "touch-action": "manipulation",
+          },
         }}
       />
 
@@ -183,83 +212,157 @@ export default function MapView({ nodeSequence, initialPosition }) {
         initialPositionX={containerSize / 2}
         initialPositionY={containerSize / 2}
         limitToWrapperBounds
+        doubleClick={{ disabled: true }}
+        pinch={{ step: 50 }}
       >
-        <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
-          <Box
-            sx={{
-              position: "relative",
-              width: containerSize,
-              height: containerSize,
-              backgroundImage: `url(${mapImage})`,
-              backgroundSize: "contain",
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "center",
-              imageRendering: "crisp-edges",
-            }}
-          >
-            {/* Navigation Path */}
-            {renderPoints.length > 0 && (
-              <svg
-                width={containerSize}
-                height={containerSize}
+        {({ zoomIn, zoomOut, resetTransform }) => (
+          <>
+            {/* Mobile Controls */}
+            <div
+              style={{
+                position: "absolute",
+                right: 10,
+                bottom: 10,
+                zIndex: 1000,
+                display: "flex",
+                gap: "8px",
+              }}
+            >
+              <button
+                onClick={() => zoomIn()}
                 style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  pointerEvents: "none",
+                  padding: "8px",
+                  background: "#fff",
+                  border: "2px solid #1976d2",
+                  borderRadius: "50%",
+                  width: "40px",
+                  height: "40px",
+                  fontSize: "1.2rem",
+                  color: "#1976d2",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
                 }}
               >
-                <polyline
-                  points={pointsString}
-                  fill="none"
-                  stroke="blue"
-                  strokeWidth={2.5}
-                />
-                <g
-                  transform={`
-                  translate(${arrowPos.x},${arrowPos.y})
-                  rotate(${arrowPos.angle})
-                  translate(-${arrowSize / 2},-${arrowSize / 2})
-                `}
-                >
-                  <polygon
-                    points="0,0 16,8 0,16"
-                    fill="red"
-                    stroke="white"
-                    strokeWidth={1}
-                  />
-                </g>
-              </svg>
-            )}
+                +
+              </button>
+              <button
+                onClick={() => zoomOut()}
+                style={{
+                  padding: "8px",
+                  background: "#fff",
+                  border: "2px solid #1976d2",
+                  borderRadius: "50%",
+                  width: "40px",
+                  height: "40px",
+                  fontSize: "1.2rem",
+                  color: "#1976d2",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                }}
+              >
+                -
+              </button>
+              <button
+                onClick={() => resetTransform()}
+                style={{
+                  padding: "8px",
+                  background: "#fff",
+                  border: "2px solid #1976d2",
+                  borderRadius: "50%",
+                  width: "40px",
+                  height: "40px",
+                  fontSize: "1.2rem",
+                  color: "#1976d2",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                }}
+              >
+                ⟲
+              </button>
+            </div>
 
-            {/* User Position Marker */}
-            {initialPosition && (
-              <svg
-                width={containerSize}
-                height={containerSize}
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  pointerEvents: "none",
+            <TransformComponent
+              wrapperStyle={{
+                width: "100%",
+                height: "100%",
+                touchAction: "manipulation",
+              }}
+              contentStyle={{
+                transition: "transform 0.15s ease-out",
+              }}
+            >
+              <Box
+                sx={{
+                  position: "relative",
+                  width: containerSize,
+                  height: containerSize,
+                  backgroundImage: `url(${mapImage})`,
+                  backgroundSize: "contain",
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "center",
+                  imageRendering: "crisp-edges",
                 }}
               >
-                <g transform={`translate(${userMarker.x},${userMarker.y})`}>
-                  <circle r="10" fill="limegreen" opacity="0.8" />
-                  <line
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="-25"
-                    stroke="darkgreen"
-                    strokeWidth={4}
-                    transform={`rotate(${userAngle})`}
-                  />
-                </g>
-              </svg>
-            )}
-          </Box>
-        </TransformComponent>
+                {/* Navigation Path */}
+                {renderPoints.length > 0 && (
+                  <svg
+                    width={containerSize}
+                    height={containerSize}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <polyline
+                      points={pointsString}
+                      style={{ fill: "none", stroke: "blue", strokeWidth: 2.5 }}
+                    />
+                    <g
+                      transform={`
+                        translate(${arrowPos.x},${arrowPos.y})
+                        rotate(${arrowPos.angle})
+                        translate(-${arrowSize / 2},-${arrowSize / 2})
+                      `}
+                    >
+                      <polygon
+                        points="0,0 16,8 0,16"
+                        fill="red"
+                        stroke="white"
+                        strokeWidth="1"
+                      />
+                    </g>
+                  </svg>
+                )}
+
+                {/* User Position Marker */}
+                {initialPosition && (
+                  <svg
+                    width={containerSize}
+                    height={containerSize}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <g transform={`translate(${userMarker.x},${userMarker.y})`}>
+                      <circle r="10" fill="limegreen" opacity="0.8" />
+                      <line
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="-25"
+                        stroke="darkgreen"
+                        strokeWidth="4"
+                        transform={`rotate(${userAngle})`}
+                      />
+                    </g>
+                  </svg>
+                )}
+              </Box>
+            </TransformComponent>
+          </>
+        )}
       </TransformWrapper>
     </div>
   );
