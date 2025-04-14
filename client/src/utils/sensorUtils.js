@@ -1,21 +1,23 @@
-// src/utils/sensorUtils.js
-
-// A naive Pedestrian Dead Reckoning approach using device orientation & motion
-
 import allCoords from "./allCoordinatesArray.js";
 
+// Vancouver-specific calibration constants
+const VCC_CALIBRATION = {
+  magneticDeclination: -19.5, // Vancouver's magnetic declination
+  mapRotation: 32, // Map's clockwise rotation from true north
+  coordinateScale: 0.87, // Scaling factor for map accuracy
+};
+
 export class PedestrianDeadReckoning {
-  constructor(initialPosition = { x: 0, y: 0 }) {
-    this.position = { ...initialPosition };
-    this.stepLength = 0.7; // average step length in meters
-    this.heading = 0; // 0..360 degrees
+  constructor(initialPosition) {
+    this.position = initialPosition;
+    this.stepLength = 0.7 * VCC_CALIBRATION.coordinateScale;
+    this.heading = 0;
     this.stepCount = 0;
-    this.lastAccelerationZ = 0;
+    this.lastAcceleration = 0;
     this.isTracking = false;
   }
 
   startTracking() {
-    // iOS might not fire events unless user granted permission first
     if (typeof DeviceOrientationEvent !== "undefined") {
       window.addEventListener("deviceorientation", this.handleOrientation);
     }
@@ -25,52 +27,44 @@ export class PedestrianDeadReckoning {
     this.isTracking = true;
   }
 
+  handleOrientation = (event) => {
+    if (!event.alpha) return;
+
+    // Compensate for magnetic declination and map rotation
+    const rawHeading = event.alpha;
+    this.heading =
+      (rawHeading +
+        VCC_CALIBRATION.magneticDeclination +
+        VCC_CALIBRATION.mapRotation +
+        360) %
+      360;
+  };
+
+  handleMotion = (event) => {
+    const acc = event.acceleration.z;
+    if (Math.abs(acc - this.lastAcceleration) > 2.5) {
+      this.handleStep();
+    }
+    this.lastAcceleration = acc;
+  };
+
+  handleStep = () => {
+    if (!this.isTracking) return;
+
+    const rad = (this.heading - 90) * (Math.PI / 180);
+    this.position.x += Math.cos(rad) * this.stepLength;
+    this.position.y += Math.sin(rad) * this.stepLength;
+    this.stepCount++;
+  };
+
   stopTracking() {
     window.removeEventListener("deviceorientation", this.handleOrientation);
     window.removeEventListener("devicemotion", this.handleMotion);
     this.isTracking = false;
   }
-
-  // store heading from alpha
-  handleOrientation = (event) => {
-    // event.alpha => 0..360, typically "0" = device pointed north,
-    // but it can vary by manufacturer.
-    this.heading = event.alpha || 0;
-  };
-
-  // naive step detection from Z-acc changes
-  handleMotion = (event) => {
-    // accelerationIncludingGravity is more stable for stepping
-    const accZ = event.accelerationIncludingGravity?.z;
-    if (accZ == null) return;
-
-    // if difference from last reading is big => assume step
-    if (Math.abs(accZ - this.lastAccelerationZ) > 2.5) {
-      this.handleStep();
-    }
-    this.lastAccelerationZ = accZ;
-  };
-
-  // each step => move in "heading" direction
-  handleStep() {
-    if (!this.isTracking) return;
-
-    // heading degrees => radians
-    const rad = (this.heading - 90) * (Math.PI / 180);
-
-    // update position
-    this.position.x += Math.cos(rad) * this.stepLength;
-    this.position.y += Math.sin(rad) * this.stepLength;
-    this.stepCount++;
-  }
 }
 
-// For example, storing known campus "room => coordinate" so you
-// can match user typed location -> (x,y)
 export const ROOM_COORDINATES = allCoords.reduce((acc, item) => {
-  acc[item.id] = {
-    x: item.coordinates.x,
-    y: item.coordinates.y,
-  };
+  acc[item.id] = item.coordinates;
   return acc;
 }, {});
