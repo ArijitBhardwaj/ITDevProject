@@ -1,55 +1,41 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Box } from "@mui/material";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import mapImage from "../assets/vcc_floor1_grid.png";
 
-/** Scale campus coords -> image coords */
+// 1) We no longer import the PNG from 'src/assets'.
+//    We'll reference it by URL below.
+
 function scaleCoordinatesForImage(nodes) {
   return nodes.map(([x, y]) => {
-    // the same 256/20 logic
     let scaledX = x * (256 / 20) + 256;
     let scaledY = y * (256 / 20) * -1 + 256;
     return [scaledX, scaledY];
   });
 }
 
-/** Basic 2D distance */
 function distance2D(x1, y1, x2, y2) {
   const dx = x2 - x1;
   const dy = y2 - y1;
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-/** Build array of segments for the polyline */
 function buildSegments(points) {
   let segments = [];
   let cumulative = 0;
-
   for (let i = 0; i < points.length - 1; i++) {
     const [x1, y1] = points[i];
     const [x2, y2] = points[i + 1];
     const length = distance2D(x1, y1, x2, y2);
     cumulative += length;
-
-    segments.push({
-      x1,
-      y1,
-      x2,
-      y2,
-      length,
-      cumulativeDist: cumulative,
-    });
+    segments.push({ x1, y1, x2, y2, length, cumulativeDist: cumulative });
   }
   return segments;
 }
 
-/** Return { x, y, angle } given dist along the path */
 function getPointAtDistance(segments, dist) {
   if (!segments.length) return { x: 0, y: 0, angle: 0 };
-
-  const totalLength = segments[segments.length - 1].cumulativeDist;
-  if (dist >= totalLength) {
-    // end of path
+  const totalLen = segments[segments.length - 1].cumulativeDist;
+  if (dist >= totalLen) {
     let last = segments[segments.length - 1];
     return {
       x: last.x2,
@@ -57,22 +43,19 @@ function getPointAtDistance(segments, dist) {
       angle: angleBetween(last.x1, last.y1, last.x2, last.y2),
     };
   }
-
-  // find segment containing dist
   for (let i = 0; i < segments.length; i++) {
     const seg = segments[i];
     const startDist = i === 0 ? 0 : segments[i - 1].cumulativeDist;
     const endDist = seg.cumulativeDist;
     if (dist >= startDist && dist <= endDist) {
-      let frac = (dist - startDist) / seg.length; // 0..1
+      let frac = (dist - startDist) / seg.length;
       let x = seg.x1 + (seg.x2 - seg.x1) * frac;
       let y = seg.y1 + (seg.y2 - seg.y1) * frac;
       let angle = angleBetween(seg.x1, seg.y1, seg.x2, seg.y2);
       return { x, y, angle };
     }
   }
-
-  // fallback: last point
+  // fallback
   let last = segments[segments.length - 1];
   return {
     x: last.x2,
@@ -81,7 +64,6 @@ function getPointAtDistance(segments, dist) {
   };
 }
 
-/** Angle in degrees for arrow rotation */
 function angleBetween(x1, y1, x2, y2) {
   const rad = Math.atan2(y2 - y1, x2 - x1);
   return (rad * 180) / Math.PI;
@@ -105,34 +87,28 @@ export default function MapView({ nodeSequence }) {
       return;
     }
 
-    // scale coords -> image coords
     const coords = nodeSequence.map((n) => [n.x, n.y]);
     const scaled = scaleCoordinatesForImage(coords);
     setRenderPoints(scaled);
-
-    // build segments
     const segs = buildSegments(scaled);
     setSegments(segs);
 
-    // start arrow animation loop
+    // Animate arrow in a loop
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
-
     let startTime = performance.now();
-    const totalDist = segs.length ? segs[segs.length - 1].cumulativeDist : 0;
-    const duration = 8000; // 8s loop
+    let totalDist = segs.length ? segs[segs.length - 1].cumulativeDist : 0;
+    let duration = 8000; // loop in 8 seconds
 
     function animateArrow(timestamp) {
       let elapsed = timestamp - startTime;
-      // loop via modulo so it restarts from 0
+      // loop via modulo
       let t = (elapsed % duration) / duration;
       let dist = t * totalDist;
-
       let { x, y, angle } = getPointAtDistance(segs, dist);
       setArrowPos({ x, y, angle });
-
       animationRef.current = requestAnimationFrame(animateArrow);
     }
     animationRef.current = requestAnimationFrame(animateArrow);
@@ -145,12 +121,10 @@ export default function MapView({ nodeSequence }) {
     };
   }, [nodeSequence]);
 
-  // for the polyline
   const pointsString = renderPoints.map((pt) => pt.join(",")).join(" ");
   const arrowSize = 16;
 
   return (
-    // 1) Outer container: responsive, squares up with "padding-top:100%"
     <div
       style={{
         width: "100%",
@@ -159,9 +133,8 @@ export default function MapView({ nodeSequence }) {
         position: "relative",
       }}
     >
-      {/* 'padding-top: 100%' trick -> maintains 1:1 aspect ratio */}
+      {/* Keep the container square */}
       <div style={{ width: "100%", paddingTop: "100%", position: "relative" }}>
-        {/* 2) Actual content is absolutely positioned to fill the square */}
         <div
           style={{
             position: "absolute",
@@ -182,12 +155,16 @@ export default function MapView({ nodeSequence }) {
             limitToWrapperBounds
           >
             <TransformComponent>
-              <Box
-                sx={{
+              <div
+                style={{
                   width: "100%",
                   height: "100%",
                   position: "relative",
-                  backgroundImage: `url(${mapImage})`,
+                  // 2) Use your PNG from the public/ folder:
+                  // If your GH Pages is at /ITDevProject, you might do:
+                  // backgroundImage: "url('/ITDevProject/vcc_floor1_grid.png')"
+                  // or use process.env.PUBLIC_URL
+                  backgroundImage: "url('/vcc_floor1_grid.png')",
                   backgroundSize: "contain",
                   backgroundRepeat: "no-repeat",
                   backgroundPosition: "center",
@@ -206,13 +183,10 @@ export default function MapView({ nodeSequence }) {
                     viewBox="0 0 512 512"
                     preserveAspectRatio="xMidYMid meet"
                   >
-                    {/* Path line */}
                     <polyline
                       points={pointsString}
                       style={{ fill: "none", stroke: "blue", strokeWidth: 2.5 }}
                     />
-
-                    {/* Animated arrow */}
                     <g
                       transform={`
                         translate(${arrowPos.x}, ${arrowPos.y})
@@ -229,7 +203,7 @@ export default function MapView({ nodeSequence }) {
                     </g>
                   </svg>
                 )}
-              </Box>
+              </div>
             </TransformComponent>
           </TransformWrapper>
         </div>
