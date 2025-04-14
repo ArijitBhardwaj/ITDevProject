@@ -13,41 +13,29 @@ import SearchIcon from "@mui/icons-material/Search";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import RoomPreferencesIcon from "@mui/icons-material/RoomPreferences";
 import { useNavigate, useLocation } from "react-router-dom";
-
 import QrScannerModal from "../components/QRScannerModal";
 import MapView from "./MapView";
-
-// 1) import from sensorUtils
 import { ROOM_COORDINATES } from "../utils/sensorUtils";
 
 export default function NavigationPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // user typed or scanned
   const [currentLocation, setCurrentLocation] = useState("");
   const [destination, setDestination] = useState("");
-
-  // show/hide the QR scanner
   const [showScanner, setShowScanner] = useState(false);
   const [scanError, setScanError] = useState(null);
   const [isInitializingScanner, setIsInitializingScanner] = useState(false);
-
-  // route returned from the backend
   const [instructions, setInstructions] = useState([]);
   const [nodeSequence, setNodeSequence] = useState([]);
-
-  // 2) we store initialPosition for PDR usage
   const [initialPosition, setInitialPosition] = useState(null);
 
-  // if returning from OngoingNavigation with a prefilled destination
   useEffect(() => {
     if (location.state?.destination) {
       setDestination(location.state.destination);
     }
   }, [location]);
 
-  // for your quick picks
   const dummyRooms = [
     "Room A101",
     "Room B203",
@@ -63,12 +51,10 @@ export default function NavigationPage() {
     room.toLowerCase().includes(destination.toLowerCase())
   );
 
-  // open camera
   const handleStartScan = async () => {
     try {
       setIsInitializingScanner(true);
       setScanError(null);
-
       const perms = await navigator.permissions.query({ name: "camera" });
       if (perms.state === "denied") {
         throw new Error("Camera is blocked. Check settings.");
@@ -81,14 +67,12 @@ export default function NavigationPage() {
     }
   };
 
-  // set the user’s current location from QR
   const handleScan = (data) => {
     setCurrentLocation(data);
     setShowScanner(false);
     setScanError(null);
   };
 
-  // call your backend to get directions
   const handleGetDirections = async () => {
     if (!currentLocation || !destination) {
       setScanError("Please provide current location & destination.");
@@ -99,19 +83,23 @@ export default function NavigationPage() {
       setInstructions([]);
       setNodeSequence([]);
 
-      // 3) find campus coords for the user’s start location 
       const startCoords = ROOM_COORDINATES[currentLocation];
       if (!startCoords) {
         throw new Error(`Unknown or unmapped location: ${currentLocation}`);
       }
       setInitialPosition(startCoords);
 
-      // fetch route from the backend
-      const res = await fetch("https://itdevprojectbackend.onrender.com/api/neo4j/calc-path", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ startId: currentLocation, endId: destination }),
-      });
+      const res = await fetch(
+        "https://itdevprojectbackend.onrender.com/api/neo4j/calc-path",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            startId: currentLocation,
+            endId: destination,
+          }),
+        }
+      );
       if (!res.ok) {
         throw new Error(`HTTP Error: ${res.status}`);
       }
@@ -126,14 +114,12 @@ export default function NavigationPage() {
     }
   };
 
-  // final step => push to ongoing nav
   const handleStartNavigation = () => {
     navigate("/ongoingnav", {
       state: {
         instructions,
         nodeSequence,
         destination,
-        // 4) pass the initialPosition for PDR
         initialPosition,
       },
     });
@@ -142,6 +128,7 @@ export default function NavigationPage() {
   return (
     <Box sx={{ minHeight: "100vh", background: "#f8f8f8", p: 2 }}>
       <Container maxWidth="sm">
+        {/* Updated map container */}
         <Paper
           elevation={2}
           sx={{
@@ -154,9 +141,11 @@ export default function NavigationPage() {
             bgcolor: "#e0e0e0",
             color: "#777",
             fontWeight: 500,
+            width: "100%",
+            height: "250px", // Fixed height
+            touchAction: "none", // Disable touch
           }}
         >
-          {/* Show map even if no path (empty route => no line) */}
           <MapView nodeSequence={nodeSequence} />
         </Paper>
 
@@ -204,7 +193,6 @@ export default function NavigationPage() {
           }}
         />
 
-        {/* Quick picks */}
         <Grid container spacing={2}>
           {filteredRooms.map((room) => (
             <Grid item xs={6} sm={4} key={room}>
@@ -229,7 +217,12 @@ export default function NavigationPage() {
           ))}
         </Grid>
         {filteredRooms.length === 0 && destination && (
-          <Typography variant="body1" align="center" sx={{ mt: 4 }} color="text.secondary">
+          <Typography
+            variant="body1"
+            align="center"
+            sx={{ mt: 4 }}
+            color="text.secondary"
+          >
             No matching rooms found
           </Typography>
         )}
@@ -259,10 +252,12 @@ export default function NavigationPage() {
           </Box>
         )}
 
-        {/* Scanner */}
         {showScanner && (
           <Box sx={{ mt: 4 }}>
-            <QrScannerModal onScan={handleScan} onClose={() => setShowScanner(false)} />
+            <QrScannerModal
+              onScan={handleScan}
+              onClose={() => setShowScanner(false)}
+            />
           </Box>
         )}
       </Container>

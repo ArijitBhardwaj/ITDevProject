@@ -2,8 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import MapView from "./MapView";
-
-// import requestSensorPermissions
 import { requestSensorPermissions } from "../utils/sensorPermissions";
 
 function distanceBetween(a, b) {
@@ -42,7 +40,7 @@ function chunkRoute(nodeSequence, instructions) {
       currentInstr = [];
     }
   }
-  // leftover
+
   if (currentNodes.length > 1 || chunks.length === 0) {
     let lastMsg = instructions[instructions.length - 1];
     if (lastMsg && lastMsg.startsWith("You have arrived")) {
@@ -62,8 +60,6 @@ export default function OngoingNavigation() {
 
   const [subsections, setSubsections] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  // For iOS sensor request
   const [sensorEnabled, setSensorEnabled] = useState(false);
 
   useEffect(() => {
@@ -111,7 +107,6 @@ export default function OngoingNavigation() {
         Destination: {destination || "(none)"}
       </Typography>
 
-      {/* If sensor not enabled, show a button for iOS user */}
       {!sensorEnabled && (
         <Box sx={{ textAlign: "center", mb: 2 }}>
           <Button variant="outlined" onClick={handleEnableSensors}>
@@ -120,11 +115,18 @@ export default function OngoingNavigation() {
         </Box>
       )}
 
-      <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
-        {/* Pass initialPosition => user can see PDR if sensorEnabled is true 
-            You can do (sensorEnabled ? initialPosition : null) if you want 
-            to not even start PDR unless sensors are enabled. 
-        */}
+      {/* Updated MapView container */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          mb: 3,
+          width: "100%",
+          height: "300px", // Fixed height
+          overflow: "hidden", // Prevent dragging
+          touchAction: "none", // Disable touch gestures
+        }}
+      >
         <MapView
           nodeSequence={sub.nodes}
           initialPosition={sensorEnabled ? initialPosition : null}
