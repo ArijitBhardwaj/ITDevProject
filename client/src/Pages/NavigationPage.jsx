@@ -62,7 +62,9 @@ export default function NavigationPage() {
 
       const permissions = await navigator.permissions.query({ name: "camera" });
       if (permissions.state === "denied") {
-        throw new Error("Camera access blocked. Please enable in browser settings.");
+        throw new Error(
+          "Camera access blocked. Please enable in browser settings."
+        );
       }
       setShowScanner(true);
     } catch (error) {
@@ -73,15 +75,9 @@ export default function NavigationPage() {
   };
 
   const handleScan = (data) => {
-    const validCodes = ["A1", "B2", "C3", "D4"];
-    if (validCodes.includes(data)) {
-      setCurrentLocation(data);
-      setShowScanner(false);
-      setScanError(null);
-    } else {
-      setScanError("Invalid QR code. Please scan A1 / B2 / C3 / D4.");
-      setShowScanner(false);
-    }
+    setCurrentLocation(data);
+    setShowScanner(false);
+    setScanError(null);
   };
 
   // The main "Get Directions" function
@@ -96,14 +92,17 @@ export default function NavigationPage() {
       setNodeSequence([]);
 
       // Check your server IP/port below
-      const response = await fetch("http://192.168.1.67:5001/api/neo4j/calc-path", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          startId: currentLocation,
-          endId: destination,
-        }),
-      });
+      const response = await fetch(
+        "http://192.168.1.67:5001/api/neo4j/calc-path",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            startId: currentLocation,
+            endId: destination,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error: ${response.status}`);
@@ -266,7 +265,11 @@ export default function NavigationPage() {
         {/* Show "Start Navigation" if path is set */}
         {nodeSequence.length > 0 && (
           <Box sx={{ textAlign: "center", mt: 3 }}>
-            <Button variant="outlined" color="secondary" onClick={handleStartNavigation}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={handleStartNavigation}
+            >
               Start Navigation
             </Button>
           </Box>
