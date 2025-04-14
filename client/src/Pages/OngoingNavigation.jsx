@@ -1,79 +1,57 @@
 // src/Pages/OngoingNavigation.jsx
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import MapView from "./MapView";
 
-/**
- * Utility: compute Euclidean distance between consecutive nodes
- */
+/** Basic Euclidean distance */
 function distanceBetween(a, b) {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-/**
- * chunkRoute() — Splits the nodeSequence & instructions into ~15m subsections
- */
+/** Split route into ~15m subsections */
 function chunkRoute(nodeSequence, instructions) {
   if (!nodeSequence || nodeSequence.length < 2) {
-    return [
-      {
-        nodes: nodeSequence || [],
-        instructions: instructions || [],
-      },
-    ];
+    return [{ nodes: nodeSequence || [], instructions: instructions || [] }];
   }
 
   let chunks = [];
   let currentNodes = [nodeSequence[0]];
   let currentInstructions = [];
-
   let distSoFar = 0;
 
-  // We'll assume instructions[0] is "Start at ____"
-  // Then instructions[i+1] typically describes traveling i->i+1
-  // Adjust if your instructions differ.
   for (let i = 0; i < nodeSequence.length - 1; i++) {
     const a = nodeSequence[i];
     const b = nodeSequence[i + 1];
-    const segmentDist = distanceBetween(a, b);
+    const segDist = distanceBetween(a, b);
 
     currentNodes.push(b);
-    distSoFar += segmentDist;
-
-    // Add instructions[i+1] if it exists
+    distSoFar += segDist;
+    // instructions[i+1] typically means traveling from node i to i+1
     if (i + 1 < instructions.length) {
       currentInstructions.push(instructions[i + 1]);
     }
 
-    // If we reached ~15m, close off this chunk
     if (distSoFar >= 15) {
       chunks.push({
         nodes: [...currentNodes],
         instructions: [...currentInstructions],
       });
       distSoFar = 0;
-      // start a new chunk from b
       currentNodes = [b];
       currentInstructions = [];
     }
   }
 
-  // final chunk leftover
+  // leftover
   if (currentNodes.length > 1 || chunks.length === 0) {
-    // We also might want to add the final "You have arrived" line if it wasn't included
-    // If instructions end with "You have arrived...", add it
     let lastMsg = instructions[instructions.length - 1];
     if (lastMsg && lastMsg.startsWith("You have arrived")) {
       currentInstructions.push(lastMsg);
     }
-    chunks.push({
-      nodes: currentNodes,
-      instructions: currentInstructions,
-    });
+    chunks.push({ nodes: currentNodes, instructions: currentInstructions });
   }
 
   return chunks;
@@ -82,16 +60,19 @@ function chunkRoute(nodeSequence, instructions) {
 export default function OngoingNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
-
-  // We assume location.state was passed from NavigationPage
   const { instructions, nodeSequence, destination } = location.state || {};
 
   const [subsections, setSubsections] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // -- Pedestrian Dead Reckoning (Naive) --
+  const [userX, setUserX] = useState(0);
+  const [userY, setUserY] = useState(0);
+  const [userHeading, setUserHeading] = useState(0);
+
   useEffect(() => {
     if (!nodeSequence || nodeSequence.length === 0) {
-      // no route data => go back
+      // no route => back
       navigate("/navigationpage");
       return;
     }
@@ -99,6 +80,39 @@ export default function OngoingNavigation() {
     setSubsections(splitted);
     setCurrentIndex(0);
   }, [nodeSequence, instructions, navigate]);
+
+  // Setup naive PDR: device orientation & fake step intervals
+  useEffect(() => {
+    // If no route is loaded yet, skip
+    if (!subsections || subsections.length === 0) return;
+
+    // Start user at first node of the first chunk
+    const first = subsections[0].nodes?.[0];
+    if (first) {
+      setUserX(first.x);
+      setUserY(first.y);
+    }
+
+    function handleOrientation(e) {
+      // e.alpha => 0 is pointing north in some browsers, might need offset
+      setUserHeading(e.alpha || 0);
+    }
+    window.addEventListener("deviceorientation", handleOrientation);
+
+    // For demonstration: simulate a step every 4s
+    // Real step detection might come from DeviceMotionEvent or a pedometer plugin
+    const stepInterval = setInterval(() => {
+      const stepDist = 0.75; // meters per step
+      const rad = (userHeading * Math.PI) / 180;
+      setUserX((prev) => prev + stepDist * Math.cos(rad));
+      setUserY((prev) => prev + stepDist * Math.sin(rad));
+    }, 4000);
+
+    return () => {
+      window.removeEventListener("deviceorientation", handleOrientation);
+      clearInterval(stepInterval);
+    };
+  }, [subsections, userHeading]);
 
   if (!subsections || subsections.length === 0) {
     return (
@@ -111,22 +125,12 @@ export default function OngoingNavigation() {
   const sub = subsections[currentIndex];
   const isLast = currentIndex === subsections.length - 1;
 
-  // "Feeling Lost?" => go to NavigationPage with the old destination
   const handleFeelingLost = () => {
-    // We pass the old 'destination' so that NavPage can prefill it
-    navigate("/navigationpage", {
-      state: { destination },
-    });
+    navigate("/navigationpage", { state: { destination } });
   };
-
-  // Next chunk
   const handleNext = () => {
-    if (!isLast) {
-      setCurrentIndex((prev) => prev + 1);
-    }
+    if (!isLast) setCurrentIndex((prev) => prev + 1);
   };
-
-  // If done
   const handleCompleted = () => {
     navigate("/navigationpage", { state: { destination } });
   };
@@ -142,18 +146,16 @@ export default function OngoingNavigation() {
 
       {/* Show the chunk's partial path in MapView */}
       <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
-        <MapView nodeSequence={sub.nodes} />
+        <MapView
+          nodeSequence={sub.nodes}
+          userX={userX}
+          userY={userY}
+          userHeading={userHeading}
+        />
       </Box>
 
       {/* Buttons */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 2,
-          mb: 3,
-        }}
-      >
+      <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mb: 3 }}>
         <Button variant="outlined" color="error" onClick={handleFeelingLost}>
           Feeling Lost?
         </Button>
@@ -174,7 +176,7 @@ export default function OngoingNavigation() {
         <Typography variant="h6" gutterBottom>
           Subsection {currentIndex + 1} of {subsections.length}
         </Typography>
-        {sub.instructions && sub.instructions.length > 0 ? (
+        {sub.instructions?.length > 0 ? (
           <ol>
             {sub.instructions.map((instr, i) => (
               <li key={i}>{instr}</li>
