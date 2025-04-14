@@ -3,9 +3,7 @@ import { Box } from "@mui/material";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import mapImage from "../assets/vcc_floor1_grid.png";
 
-/**
- * Convert your campus coords -> 512x512 for the path
- */
+/** Convert campus coords -> 512x512 for path. */
 function scaleCoordinatesForImage(nodes) {
   return nodes.map(([x, y]) => {
     let scaledX = x * (256 / 20) + 256;
@@ -14,18 +12,14 @@ function scaleCoordinatesForImage(nodes) {
   });
 }
 
-/**
- * Euclidian distance
- */
+/** Basic 2D distance. */
 function distance2D(x1, y1, x2, y2) {
   const dx = x2 - x1;
   const dy = y2 - y1;
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-/**
- * Build segments for the arrow animation
- */
+/** Build array of line segments for arrow animation. */
 function buildSegments(points) {
   let segments = [];
   let cumulative = 0;
@@ -39,14 +33,13 @@ function buildSegments(points) {
   return segments;
 }
 
-/**
- * For a distance along the path, return x,y, angle
- */
+/** Return { x, y, angle } given dist along the entire polyline. */
 function getPointAtDistance(segments, dist) {
   if (!segments.length) return { x: 0, y: 0, angle: 0 };
-
   const totalLen = segments[segments.length - 1].cumulativeDist;
+
   if (dist >= totalLen) {
+    // end of path
     let last = segments[segments.length - 1];
     return {
       x: last.x2,
@@ -59,10 +52,10 @@ function getPointAtDistance(segments, dist) {
     const startDist = i === 0 ? 0 : segments[i - 1].cumulativeDist;
     const endDist = seg.cumulativeDist;
     if (dist >= startDist && dist <= endDist) {
-      const frac = (dist - startDist) / seg.length;
-      const x = seg.x1 + (seg.x2 - seg.x1) * frac;
-      const y = seg.y1 + (seg.y2 - seg.y1) * frac;
-      const angle = angleBetween(seg.x1, seg.y1, seg.x2, seg.y2);
+      let frac = (dist - startDist) / seg.length;
+      let x = seg.x1 + (seg.x2 - seg.x1) * frac;
+      let y = seg.y1 + (seg.y2 - seg.y1) * frac;
+      let angle = angleBetween(seg.x1, seg.y1, seg.x2, seg.y2);
       return { x, y, angle };
     }
   }
@@ -75,21 +68,27 @@ function getPointAtDistance(segments, dist) {
   };
 }
 
-/** angle in degrees for arrow from (x1,y1)->(x2,y2) */
+/** Compute angle in degrees from (x1,y1)->(x2,y2). */
 function angleBetween(x1, y1, x2, y2) {
   const rad = Math.atan2(y2 - y1, x2 - x1);
   return (rad * 180) / Math.PI;
 }
 
+/**
+ * MapView
+ * - A fixed 512×512 container for desktop
+ * - Freed-up pan/zoom for mobile
+ */
 export default function MapView({ nodeSequence }) {
   const [renderPoints, setRenderPoints] = useState([]);
   const [segments, setSegments] = useState([]);
   const [arrowPos, setArrowPos] = useState({ x: 0, y: 0, angle: 0 });
   const animationRef = useRef(null);
 
+  // Build path + start/stop arrow animation
   useEffect(() => {
     if (!nodeSequence || nodeSequence.length === 0) {
-      // Clear data if there's no path
+      // no path => clear data + stop anim
       setRenderPoints([]);
       setSegments([]);
       setArrowPos({ x: 0, y: 0, angle: 0 });
@@ -100,27 +99,26 @@ export default function MapView({ nodeSequence }) {
       return;
     }
 
-    // 1) scale coords to 512x512
+    // 1) scale coords
     const coords = nodeSequence.map((n) => [n.x, n.y]);
     const scaled = scaleCoordinatesForImage(coords);
     setRenderPoints(scaled);
 
-    // 2) build segments for arrow
+    // 2) build segments
     const segs = buildSegments(scaled);
     setSegments(segs);
 
-    // 3) infinite arrow animation
+    // 3) infinite arrow loop
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
     let startTime = performance.now();
     const totalDist = segs.length ? segs[segs.length - 1].cumulativeDist : 0;
-    const duration = 8000; // 8s loop
+    const duration = 8000; // 8sec
 
     function animateArrow(timestamp) {
       let elapsed = timestamp - startTime;
-      // loop with modulo
       let t = (elapsed % duration) / duration;
       let dist = t * totalDist;
       let { x, y, angle } = getPointAtDistance(segs, dist);
@@ -137,9 +135,11 @@ export default function MapView({ nodeSequence }) {
     };
   }, [nodeSequence]);
 
+  // polypoints for path
   const pointsString = renderPoints.map((pt) => pt.join(",")).join(" ");
+  // arrow config
   const arrowSize = 16;
-  // keep your fixed container for desktop
+  // your container
   const containerSize = 512;
 
   return (
@@ -153,14 +153,13 @@ export default function MapView({ nodeSequence }) {
         backgroundColor: "#ccc",
       }}
     >
-      {/* TRANSFORM WRAPPER CHANGES */}
+      {/* Freed up the pan/zoom constraints for phone */}
       <TransformWrapper
-        // allow more flexible panning on mobile
-        centerContent={false}
+        centerContent={true}
         limitToWrapperBounds={false}
-        minScale={0.5} // user can zoom out a bit
+        minScale={0.5} // user can zoom out further if phone is smaller
         maxScale={4}
-        initialScale={1}
+        initialScale={0.8} // slightly zoomed out initially
       >
         <TransformComponent>
           <Box
@@ -174,7 +173,7 @@ export default function MapView({ nodeSequence }) {
               backgroundPosition: "center",
             }}
           >
-            {/* Render the path + arrow if we have points */}
+            {/* If path is set, draw the line + arrow */}
             {renderPoints.length > 0 && (
               <svg
                 width={containerSize}
