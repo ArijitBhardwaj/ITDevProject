@@ -7,6 +7,8 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Grants GitHub Actions write access to push to gh-pages
 
     steps:
       - name: Checkout Repository
