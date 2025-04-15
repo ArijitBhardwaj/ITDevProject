@@ -27,6 +27,9 @@ const elevator = JSON.parse(
 const washroom = JSON.parse(
   fs.readFileSync(path.join(__dirname, "../maps/washroom.json"), "utf-8")
 );
+const room = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "../maps/room.json"), "utf-8")
+);
 const uniWashroom = JSON.parse(
   fs.readFileSync(
     path.join(__dirname, "../maps/universal_washroom.json"),
@@ -57,6 +60,7 @@ pushData(landmarks, "landmark");
 pushData(stairs, "stairs");
 pushData(elevator, "elevator");
 pushData(washroom, "washroom");
+pushData(room, "room");
 pushData(uniWashroom, "universal_washroom");
 pushData(reference, "reference");
 
