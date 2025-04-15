@@ -1,20 +1,49 @@
 /**
  * neo4jRoutes.js
- *
- * Provides an endpoint to compute path between two nodes using APOC's aStar,
- * restricting the path to "G" nodes via relationship filtering.
+ * Fixed version with proper function order and error handling
  */
 
 const express = require("express");
 const router = express.Router();
 const neo4j = require("neo4j-driver");
 
+// Connect to Neo4j
 const driver = neo4j.driver(
   "neo4j+s://0bd9eb92.databases.neo4j.io",
   neo4j.auth.basic("neo4j", "si5lTkftMBNyESFG-hGczn5QThMCdNYml_E2WO9PjEk")
 );
 
-// computeDistanceAndDirection and angleToCardinal functions remain unchanged
+// Utility functions moved before route handler
+function computeDistanceAndDirection(ax, ay, bx, by) {
+  const dx = bx - ax;
+  const dy = by - ay;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+  return {
+    distance: dist,
+    direction: angleToCardinal(angleDeg),
+  };
+}
+
+function angleToCardinal(angleDeg) {
+  const directions = [
+    [-22.5, 22.5, "east"],
+    [22.5, 67.5, "northeast"],
+    [67.5, 112.5, "north"],
+    [112.5, 157.5, "northwest"],
+    [157.5, 202.5, "west"],
+    [202.5, 247.5, "southwest"],
+    [247.5, 292.5, "south"],
+    [292.5, 337.5, "southeast"],
+  ];
+
+  const normalized = (angleDeg + 360) % 360;
+  return (
+    directions.find(
+      ([min, max]) => normalized >= min && normalized < max
+    )?.[2] || "east"
+  );
+}
 
 router.post("/calc-path", async (req, res) => {
   const { startId, endId } = req.body;
@@ -43,7 +72,7 @@ router.post("/calc-path", async (req, res) => {
       CALL apoc.algo.aStar(
         traversableStart,
         traversableEnd,
-        "G_CONNECTED",  // Use relationship type specific to G nodes
+        "G_CONNECTED",
         "distance",
         "x",
         "y"
@@ -67,7 +96,7 @@ router.post("/calc-path", async (req, res) => {
     const travStartNode = record.get("traversableStart").properties;
     const travEndNode = record.get("traversableEnd").properties;
 
-    // Build segments from the aStar path
+    // Process path segments
     const pathSegments = astarPath.segments.map((seg) => {
       const s = seg.start.properties;
       const e = seg.end.properties;
@@ -75,168 +104,141 @@ router.post("/calc-path", async (req, res) => {
       return {
         from: {
           id: s.id,
-          x: s.x,
-          y: s.y,
-          type: s.type,
+          x: parseFloat(s.x),
+          y: parseFloat(s.y),
+          type: s.type || "",
         },
         to: {
           id: e.id,
-          x: e.x,
-          y: e.y,
-          type: e.type,
+          x: parseFloat(e.x),
+          y: parseFloat(e.y),
+          type: e.type || "",
         },
-        distance: rel.distance,
+        distance: parseFloat(rel.distance),
         direction: rel.direction,
       };
     });
 
-    // aStar node list
+    // Build node sequence and instructions
     const aStarNodes = [];
-    if (pathSegments.length > 0) {
-      aStarNodes.push({
-        id: pathSegments[0].from.id,
-        x: pathSegments[0].from.x,
-        y: pathSegments[0].from.y,
-        type: pathSegments[0].from.type,
-      });
-      for (let seg of pathSegments) {
-        aStarNodes.push({
-          id: seg.to.id,
-          x: seg.to.x,
-          y: seg.to.y,
-          type: seg.to.type,
-        });
-      }
-    }
-
-    // Build aStar instructions
     const aStarInstr = [];
+
     if (pathSegments.length > 0) {
+      aStarNodes.push(pathSegments[0].from);
       aStarInstr.push(`(A*) Start at ${pathSegments[0].from.id}`);
-      pathSegments.forEach((seg) => {
-        let dir = seg.direction;
-        let dist = seg.distance;
-        if (!dir) {
-          const c = computeDistanceAndDirection(
+
+      pathSegments.forEach((seg, index) => {
+        aStarNodes.push(seg.to);
+        const dir =
+          seg.direction ||
+          computeDistanceAndDirection(
             seg.from.x,
             seg.from.y,
             seg.to.x,
             seg.to.y
-          );
-          dir = c.direction;
-          dist = c.distance;
-        }
+          ).direction;
+
         aStarInstr.push(
-          `Walk ${dir} for ${dist.toFixed(1)}m toward ${seg.to.id}`
+          `Walk ${dir} for ${seg.distance.toFixed(1)}m toward ${seg.to.id}`
         );
+
+        if (index === pathSegments.length - 1) {
+          aStarInstr.push(`(A*) Arrived at ${seg.to.id}`);
+        }
       });
-      aStarInstr.push(
-        `(A*) Arrived at ${pathSegments[pathSegments.length - 1].to.id}`
-      );
     }
 
-    // Step from real startId => travStart
-    let firstSteps = [];
-    let extraDist1 = 0;
+    // Handle start/end connections
+    const [firstSteps, lastSteps] = [[], []];
+    let [extraDist1, extraDist2] = [0, 0];
+
     if (neo4jStartNode.id !== travStartNode.id) {
-      const c = computeDistanceAndDirection(
+      const startDist = computeDistanceAndDirection(
         parseFloat(neo4jStartNode.x),
         parseFloat(neo4jStartNode.y),
         parseFloat(travStartNode.x),
         parseFloat(travStartNode.y)
       );
-      extraDist1 = c.distance;
+      extraDist1 = startDist.distance;
       firstSteps.push(
-        `Walk ${c.direction} for ${c.distance.toFixed(1)}m toward ${
-          travStartNode.id
-        }`
+        `Walk ${startDist.direction} for ${startDist.distance.toFixed(
+          1
+        )}m toward ${travStartNode.id}`
       );
     }
 
-    // Step from travEnd => real endId
-    let lastSteps = [];
-    let extraDist2 = 0;
     if (neo4jEndNode.id !== travEndNode.id) {
-      const c2 = computeDistanceAndDirection(
+      const endDist = computeDistanceAndDirection(
         parseFloat(travEndNode.x),
         parseFloat(travEndNode.y),
         parseFloat(neo4jEndNode.x),
         parseFloat(neo4jEndNode.y)
       );
-      extraDist2 = c2.distance;
+      extraDist2 = endDist.distance;
       lastSteps.push(
-        `Walk ${c2.direction} for ${c2.distance.toFixed(1)}m toward ${
+        `Walk ${endDist.direction} for ${endDist.distance.toFixed(1)}m toward ${
           neo4jEndNode.id
         }`
       );
     }
 
-    // Combine instructions
-    const finalInstructions = [];
-    finalInstructions.push(`Start at ${neo4jStartNode.id}`);
-    firstSteps.forEach((i) => finalInstructions.push(i));
-    // If we have aStar segments, skip the first line "(A*) Start at..."
-    if (pathSegments.length > 0) {
-      for (let i = 1; i < aStarInstr.length; i++) {
-        finalInstructions.push(aStarInstr[i]);
-      }
-    }
-    lastSteps.forEach((i) => finalInstructions.push(i));
-    finalInstructions.push(`Arrived at ${neo4jEndNode.id}`);
+    // Compile final output
+    const finalInstructions = [
+      `Start at ${neo4jStartNode.id}`,
+      ...firstSteps,
+      ...(pathSegments.length > 0 ? aStarInstr.slice(1) : []),
+      ...lastSteps,
+      `Arrived at ${neo4jEndNode.id}`,
+    ];
 
-    // Build final nodeSequence:
-    //  [startId, if needed travStart, then aStar nodes skipping duplicates, travEnd, endId]
-    const finalNodeSequence = [];
-    // real start
-    finalNodeSequence.push({
-      id: neo4jStartNode.id,
-      x: parseFloat(neo4jStartNode.x),
-      y: parseFloat(neo4jStartNode.y),
-      type: neo4jStartNode.type || "",
-    });
-    if (neo4jStartNode.id !== travStartNode.id) {
-      finalNodeSequence.push({
-        id: travStartNode.id,
-        x: parseFloat(travStartNode.x),
-        y: parseFloat(travStartNode.y),
-        type: travStartNode.type || "",
-      });
-    }
-    if (aStarNodes.length > 0) {
-      // skip the first if it's exactly travStart
-      aStarNodes.forEach((nd, idx) => {
-        if (idx === 0 && nd.id === travStartNode.id) {
-          return;
-        }
-        finalNodeSequence.push({
-          id: nd.id,
-          x: parseFloat(nd.x),
-          y: parseFloat(nd.y),
-          type: nd.type || "",
-        });
-      });
-    }
-    if (neo4jEndNode.id !== travEndNode.id) {
-      finalNodeSequence.push({
-        id: neo4jEndNode.id,
-        x: parseFloat(neo4jEndNode.x),
-        y: parseFloat(neo4jEndNode.y),
-        type: neo4jEndNode.type || "",
-      });
-    }
-
-    // Sum total distance
-    const totalDistance = totalWeight + extraDist1 + extraDist2;
+    const finalNodeSequence = [
+      {
+        id: neo4jStartNode.id,
+        x: parseFloat(neo4jStartNode.x),
+        y: parseFloat(neo4jStartNode.y),
+        type: neo4jStartNode.type || "",
+      },
+      ...(neo4jStartNode.id !== travStartNode.id
+        ? [
+            {
+              id: travStartNode.id,
+              x: parseFloat(travStartNode.x),
+              y: parseFloat(travStartNode.y),
+              type: travStartNode.type || "",
+            },
+          ]
+        : []),
+      ...aStarNodes.slice(1).map((n) => ({
+        id: n.id,
+        x: n.x,
+        y: n.y,
+        type: n.type || "",
+      })),
+      ...(neo4jEndNode.id !== travEndNode.id
+        ? [
+            {
+              id: neo4jEndNode.id,
+              x: parseFloat(neo4jEndNode.x),
+              y: parseFloat(neo4jEndNode.y),
+              type: neo4jEndNode.type || "",
+            },
+          ]
+        : []),
+    ];
 
     return res.json({
       success: true,
-      totalDistance,
+      totalDistance: totalWeight + extraDist1 + extraDist2,
       instructions: finalInstructions,
       nodeSequence: finalNodeSequence,
     });
   } catch (err) {
     console.error("Error in calc-path:", err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({
+      error: err.message.startsWith("Neo4jError: ")
+        ? err.message.split(": ")[1]
+        : "Internal server error",
+    });
   } finally {
     await session.close();
   }

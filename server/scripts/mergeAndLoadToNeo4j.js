@@ -13,7 +13,7 @@ const fs = require("fs");
 const path = require("path");
 const neo4j = require("neo4j-driver");
 
-// 1) Load JSON Files
+// 1) Load JSON Files with numeric conversion
 const loadJSON = (filename) =>
   JSON.parse(
     fs.readFileSync(path.join(__dirname, `../maps/${filename}`), "utf-8")
@@ -30,15 +30,19 @@ const dataSources = {
   reference: "reference.json",
 };
 
+
 let allNodes = [];
 
-// 2) Combine data with type normalization
+// 2) Combine data with type normalization and numeric conversion
 Object.entries(dataSources).forEach(([type, file]) => {
   loadJSON(file).forEach((item) => {
     allNodes.push({
       id: item.id,
       type: item.type || type,
-      coordinates: item.coordinates,
+      coordinates: {
+        x: parseFloat(item.coordinates.x),
+        y: parseFloat(item.coordinates.y),
+      },
     });
   });
 });
@@ -89,11 +93,11 @@ async function main() {
     await session.run("MATCH (n) DETACH DELETE n");
     console.log("Database cleared");
 
-    // Create all nodes
-    const createNode = async (node) => {
+    // Create all nodes with numeric properties
+    console.log("Creating nodes...");
+    for (const node of allNodes) {
       await session.run(
-        `
-        CREATE (n:Node {
+        `CREATE (n:Node {
           id: $id,
           type: $type,
           x: $x,
@@ -107,14 +111,9 @@ async function main() {
           y: node.coordinates.y,
         }
       );
-    };
-
-    console.log("Creating nodes...");
-    for (const node of allNodes) {
-      await createNode(node);
     }
 
-    // Create relationships
+    // Create relationships with numeric distances
     console.log("Creating relationships...");
     for (let i = 0; i < allNodes.length; i++) {
       const A = allNodes[i];
@@ -129,35 +128,32 @@ async function main() {
           const isGConnection = A.id.startsWith("G") && B.id.startsWith("G");
 
           await session.run(
-            `
-            MATCH (a:Node {id: $idA}), (b:Node {id: $idB})
-            MERGE (a)-[:CONNECTED {
-              distance: $dist,
-              direction: $dirAB
-            }]->(b)
-            MERGE (b)-[:CONNECTED {
-              distance: $dist,
-              direction: $dirBA
-            }]->(a)
-            ${
-              isGConnection
-                ? `
-            MERGE (a)-[:G_CONNECTED {
-              distance: $dist,
-              direction: $dirAB
-            }]->(b)
-            MERGE (b)-[:G_CONNECTED {
-              distance: $dist,
-              direction: $dirBA
-            }]->(a)
-            `
-                : ""
-            }
-            `,
+            `MATCH (a:Node {id: $idA}), (b:Node {id: $idB})
+             MERGE (a)-[:CONNECTED {
+               distance: $dist,
+               direction: $dirAB
+             }]->(b)
+             MERGE (b)-[:CONNECTED {
+               distance: $dist,
+               direction: $dirBA
+             }]->(a)
+             ${
+               isGConnection
+                 ? `
+             MERGE (a)-[:G_CONNECTED {
+               distance: $dist,
+               direction: $dirAB
+             }]->(b)
+             MERGE (b)-[:G_CONNECTED {
+               distance: $dist,
+               direction: $dirBA
+             }]->(a)`
+                 : ""
+             }`,
             {
               idA: A.id,
               idB: B.id,
-              dist: dist.toFixed(2),
+              dist: dist, // Keep as number, no toFixed()
               dirAB,
               dirBA,
             }
