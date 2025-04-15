@@ -90,8 +90,7 @@ function angleBetween(x1, y1, x2, y2) {
 }
 
 export default function MapView({
-  nodeSequence,
-  nodeTags = roomNodes,
+  nodeSequence,  
   initialPosition,
 }) {
   // Path-related states
@@ -172,7 +171,7 @@ export default function MapView({
           parseFloat(node.coordinates.y) * (256 / 20) * -1 + 256;
         return node;
       });
-      // console.log(temp)
+      console.log(temp)
       if (temp.length > 0) setScaledFlag(true);
       return temp;
     } else {
@@ -252,13 +251,12 @@ export default function MapView({
 
   // Initialise clickable node tags
   useEffect(() => {
-    if (!nodeTags?.length) {
+    if (!roomNodes?.length) {
       setNodeTagPoints([]);
       return;
     }
-    const scaledNodeTags = scaleNodeTagsForImage(nodeTags);
-    setNodeTagPoints(scaledNodeTags);
-    console.log(nodeTagPoints)
+    const scaledNodeTags = scaleNodeTagsForImage(roomNodes);
+    setNodeTagPoints(scaledNodeTags);    
   }, []);
 
   const pointsString = renderPoints.map((p) => p.join(",")).join(" ");
@@ -475,7 +473,7 @@ export default function MapView({
                   <svg
                         key={"nodeTagsSVG"}
                         xmlns="http://www.w3.org/2000/svg"
-                        className="renderedPath"
+                        className="clickableNodes"
                         width={512}
                         height={512}                        
                     >
