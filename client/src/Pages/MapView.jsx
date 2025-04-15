@@ -165,7 +165,8 @@ export default function MapView({
 
   function scaleNodeTagsForImage(nodes) {
     if (!scaledFlag) {
-      const temp = nodes.map((node) => {
+      let temp = nodes
+      temp.map((node) => {
         node.coordinates.x = parseFloat(node.coordinates.x) * (256 / 20) + 256;
         node.coordinates.y =
           parseFloat(node.coordinates.y) * (256 / 20) * -1 + 256;
