@@ -440,7 +440,7 @@ export default function MapView({
                     horizontal: "left",
                   }}
                 >
-                  <Card sx={{ padding: "5px", width: "200px" }}>
+                  <Card sx={{ padding: "5px", width: "200px" }}> 
                     <div
                       style={{
                         display: "flex",
@@ -469,7 +469,7 @@ export default function MapView({
                 </Popover>
 
                 {/* Clickable tags for nodes */}
-                {nodeTagPoints.length > 0 && (                
+                {nodeTagPoints.length > 0 && renderPoints.length <= 0 && (                
                   <svg
                         key={"nodeTagsSVG"}
                         xmlns="http://www.w3.org/2000/svg"
