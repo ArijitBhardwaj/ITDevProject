@@ -148,12 +148,11 @@ export default function NavigationPage() {
         destination,
         0
       );
-      // You might want to log tripId for debugging
       console.log("Trip saved with ID:", tripId);
 
       navigate("/ongoingnav", {
         state: {
-          tripId, // Pass the trip ID if needed for later updates
+          tripId,
           instructions,
           nodeSequence,
           destination,

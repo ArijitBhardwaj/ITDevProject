@@ -33,8 +33,7 @@ function buildSegments(points) {
   let segments = [];
   let cumulative = 0;
 
-  // "Map North" vector example (from your conversation)
-  // You can adjust these coordinates if your map north changes
+  // "Map North" vector example
   const mapNorthVector = {
     x: 5.79 - 5.46,
     y: 6.38 - 7.54,
@@ -114,7 +113,7 @@ export default function MapView({ nodeSequence, initialPosition }) {
   const animationRef = useRef(null);
 
   // Compass & user marker states
-  const [userHeading, setUserHeading] = useState(0); // heading from device's compass
+  const [userHeading, setUserHeading] = useState(0);
   const [requiredTurn, setRequiredTurn] = useState({
     degrees: 0,
     direction: "",
@@ -128,7 +127,7 @@ export default function MapView({ nodeSequence, initialPosition }) {
       }
     : { x: 0, y: 0 };
 
-  // ================== POPUP STATES FOR ROOM NODES (unchanged) ==================
+  // ================== POPUP STATES (unchanged) ==================
   const [nodeTagPoints, setNodeTagPoints] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [popoverNodeTarget, setPopoverNodeTarget] = useState(null);
@@ -145,7 +144,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
     setAnchorEl(null);
   };
 
-  // Scale node tags once. We keep your same approach from previous code:
   let scaledFlag = false;
   function scaleNodeTagsForImage(nodes) {
     if (!scaledFlag) {
@@ -166,32 +164,22 @@ export default function MapView({ nodeSequence, initialPosition }) {
     }
   }
 
-  // We load roomNodes once into nodeTagPoints
   useEffect(() => {
     if (nodeTagPoints.length > 0) return;
     const scaledNodeTags = scaleNodeTagsForImage(roomNodes);
     setNodeTagPoints(scaledNodeTags);
   }, [nodeTagPoints, roomNodes]);
 
-  // ================== Compass Handling (Alpha - Phi + Gamma) ==================
+  // ================== Compass Handling ==================
   useEffect(() => {
-    // We'll attach listener to 'deviceorientationabsolute' for iOS 13+ plus fallback
     const handleOrientation = (event) => {
       if (typeof event.alpha === "number") {
-        // 'alpha' is device's compass reading in degrees (0-360)
         const alpha = event.alpha;
-
-        // If we have at least one segment, use the first segment's 'phi'
-        // Then apply the formula: TurnAngle = Alpha - Phi + Gamma
         if (segments.length > 0) {
-          const phi = segments[0].phi; // angle to map north
-          // We keep "Gamma" as a calibration from VCC_CALIBRATION
-          const gamma = VCC_CALIBRATION.mapRotation; // e.g. 32°, or you can tweak
+          const phi = segments[0].phi;
+          const gamma = VCC_CALIBRATION.mapRotation;
 
-          // Apply the formula and keep it in [0..360)
           let turnAngle = (alpha - phi + gamma + 360) % 360;
-
-          // For the display in the "Turn X° Left/Right" banner:
           let displayAngle;
           let direction;
           if (turnAngle <= 180) {
@@ -207,9 +195,8 @@ export default function MapView({ nodeSequence, initialPosition }) {
             direction: direction,
           });
 
-          // We'll also store raw alpha in userHeading, if you want the arrow to rotate by the phone heading
-          setUserHeading(turnAngle); // If you want the user marker arrow to point where we *should* turn
-          // Or setUserHeading(alpha) if you want it to point to phone's actual compass
+          // If you prefer the marker to show *actual phone heading*, use alpha
+          setUserHeading(turnAngle);
         }
       }
     };
@@ -231,10 +218,9 @@ export default function MapView({ nodeSequence, initialPosition }) {
     };
   }, [segments]);
 
-  // ================== Build path segments & animate the arrow along the path ==================
+  // ================== Path building & animation ==================
   useEffect(() => {
     if (!nodeSequence?.length) {
-      // If no path, reset
       setRenderPoints([]);
       setSegments([]);
       setArrowPos({ x: 0, y: 0, angle: 0 });
@@ -242,20 +228,17 @@ export default function MapView({ nodeSequence, initialPosition }) {
       return;
     }
 
-    // Scale the nodeSequence
     const scaled = scaleCoordinatesForImage(
       nodeSequence.map((n) => [n.x, n.y])
     );
     setRenderPoints(scaled);
 
-    // Build segments with phi
     const segs = buildSegments(scaled);
     setSegments(segs);
 
-    // Animate the arrow
     let startTime = performance.now();
     const totalDist = segs[segs.length - 1]?.cumulativeDist || 0;
-    const duration = 8000; // 8 seconds for a full loop
+    const duration = 8000;
 
     const animate = (timestamp) => {
       const elapsed = timestamp - startTime;
@@ -269,7 +252,7 @@ export default function MapView({ nodeSequence, initialPosition }) {
     return () => cancelAnimationFrame(animationRef.current);
   }, [nodeSequence]);
 
-  // ================== Build polyline string for the path ==================
+  // ================== Path rendering ==================
   const pointsString = renderPoints.map((p) => p.join(",")).join(" ");
   const arrowSize = 16;
 
@@ -285,7 +268,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
         position: "relative",
       }}
     >
-      {/* Prevent text highlighting */}
       <GlobalStyles
         styles={{
           body: {
@@ -297,7 +279,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
         }}
       />
 
-      {/* Turn Instructions Banner (center-top) */}
       {requiredTurn.degrees > 0 && (
         <div
           style={{
@@ -318,7 +299,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
         </div>
       )}
 
-      {/* Zoom/Pan Wrapper */}
       <TransformWrapper
         minScale={0.8}
         maxScale={4}
@@ -330,7 +310,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
       >
         {({ zoomIn, zoomOut, resetTransform }) => (
           <>
-            {/* Zoom Controls */}
             <div
               style={{
                 position: "absolute",
@@ -374,9 +353,7 @@ export default function MapView({ nodeSequence, initialPosition }) {
                 -
               </button>
               <button
-                onClick={() => {
-                  resetTransform();
-                }}
+                onClick={() => resetTransform()}
                 style={{
                   padding: "8px",
                   background: "#fff",
@@ -412,7 +389,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
                   position: "relative",
                 }}
               >
-                {/* The main path polyline + moving arrow (red) */}
                 {renderPoints.length > 0 && (
                   <svg
                     width={512}
@@ -441,7 +417,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
                   </svg>
                 )}
 
-                {/* Popover for clickable room nodes */}
                 <Popover
                   id={idPopover}
                   open={openPopover}
@@ -475,7 +450,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
                   </Card>
                 </Popover>
 
-                {/* Clickable tags for nodes (only if no path) */}
                 {nodeTagPoints.length > 0 && renderPoints.length <= 0 && (
                   <svg
                     key={"nodeTagsSVG"}
@@ -499,7 +473,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
                   </svg>
                 )}
 
-                {/* The green user marker (circle + line) showing orientation */}
                 {initialPosition && (
                   <svg
                     width={512}
@@ -515,7 +488,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
                         y2="-25"
                         stroke="darkgreen"
                         strokeWidth={4}
-                        // Rotate by our computed heading (turnAngle) to show direction
                         transform={`rotate(${userHeading})`}
                       />
                     </g>
