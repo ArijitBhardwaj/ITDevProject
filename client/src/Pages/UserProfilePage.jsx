@@ -22,8 +22,7 @@ import {
   query,
   where,
   getDocs,
-  updateDoc,
-  doc,
+  // updateDoc and doc can be imported later if you add update logic
 } from "firebase/firestore";
 
 const UserProfilePage = () => {
@@ -31,21 +30,21 @@ const UserProfilePage = () => {
   const [user, setUser] = useState(null);
   const [trips, setTrips] = useState([]);
 
+  // Listen for auth state changes and fetch trips
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
 
-        const q = query(
+        const tripsQuery = query(
           collection(db, "trips"),
           where("userId", "==", firebaseUser.uid)
         );
-        const querySnapshot = await getDocs(q);
-
-        const tripData = [];
-        querySnapshot.forEach((doc) => {
-          tripData.push({ id: doc.id, ...doc.data() });
-        });
+        const querySnapshot = await getDocs(tripsQuery);
+        const tripData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
         setTrips(tripData);
       } else {
         setUser(null);
@@ -55,15 +54,18 @@ const UserProfilePage = () => {
     return () => unsubscribe();
   }, []);
 
+  // Sign out function
   const handleSignOut = async () => {
     await auth.signOut();
     navigate("/signin");
   };
 
+  // Navigate to the Navigation Page to start a new trip
   const handleStartTrip = () => {
     navigate("/navigationpage");
   };
 
+  // If the user is not logged in, show a nice login prompt
   if (!user) {
     return (
       <Box
@@ -103,6 +105,7 @@ const UserProfilePage = () => {
         alignItems: "center",
       }}
     >
+      {/* User Info */}
       <Avatar
         sx={{
           width: 100,
@@ -114,14 +117,13 @@ const UserProfilePage = () => {
       >
         {user.email?.charAt(0).toUpperCase()}
       </Avatar>
-
       <Typography variant="h5" sx={{ mb: 1 }}>
         {user.displayName || "User"}
       </Typography>
       <Typography variant="body1">{user.email}</Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
         Signed in on:{" "}
-        {new Date(user.metadata.creationTime).toLocaleDateString()}
+        {new Date(user.metadata?.creationTime).toLocaleDateString()}
       </Typography>
 
       <Button
@@ -133,6 +135,7 @@ const UserProfilePage = () => {
         Sign Out
       </Button>
 
+      {/* Trips Section */}
       <Card sx={{ width: "100%", maxWidth: 500, mb: 3, borderRadius: 3 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
@@ -150,10 +153,12 @@ const UserProfilePage = () => {
                     }
                   >
                     <ListItemText
-                      primary={`From ${trip.startPoint} to ${trip.endPoint}`}
-                      secondary={`Started: ${trip.tripStartTime} | Completed: ${
-                        trip.completed ? "Yes" : "No"
-                      }`}
+                      primary={`From ${trip.tripStartPoint} to ${trip.tripEndPoint}`}
+                      secondary={`Started: ${
+                        trip.tripStartTime
+                          ? new Date(trip.tripStartTime.seconds * 1000).toLocaleString()
+                          : "Unknown"
+                      } | Completed: ${trip.completed ? "Yes" : "No"}`}
                     />
                   </ListItem>
                   <Divider />
@@ -168,6 +173,7 @@ const UserProfilePage = () => {
         </CardContent>
       </Card>
 
+      {/* Preferences Section */}
       <Card sx={{ width: "100%", maxWidth: 500, borderRadius: 3, mb: 3 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
@@ -200,7 +206,7 @@ const UserProfilePage = () => {
         </CardContent>
       </Card>
 
-      {/* New: Start a Trip Button */}
+      {/* Button to Start a Trip (navigates to navigation page) */}
       <Button
         variant="contained"
         onClick={handleStartTrip}
@@ -223,4 +229,3 @@ const UserProfilePage = () => {
 };
 
 export default UserProfilePage;
-
