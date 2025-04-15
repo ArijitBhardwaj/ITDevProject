@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Box, GlobalStyles, Typography } from "@mui/material";
+import { Box, Card, Popover, Typography, GlobalStyles, Typography } from "@mui/material";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import mapImage from "../assets/vcc_floor1_grid.png";
 
@@ -86,7 +86,7 @@ function angleBetween(x1, y1, x2, y2) {
   return (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
 }
 
-export default function MapView({ nodeSequence, initialPosition }) {
+export default function MapView({ nodeSequence, nodeTags = [], initialPosition }) {
   // Path-related states
   const [renderPoints, setRenderPoints] = useState([]);
   const [segments, setSegments] = useState([]);
@@ -127,6 +127,52 @@ export default function MapView({ nodeSequence, initialPosition }) {
   }, []);
 
   // Build path segments, and animate the arrow
+  // ================== FOR POPUPS ==================
+  const [nodeTagPoints, setNodeTagPoints] = useState([])
+  const [anchorEl, setAnchorEl] = useState(null)
+  const [popoverNodeTarget, setPopoverNodeTarget] = useState(null)
+
+  const openPopover = Boolean(anchorEl)
+  const idPopover = openPopover ? 'simple-popover' : undefined
+
+  const handleClick = (node) => (event) =>
+  {                
+      setAnchorEl(event.currentTarget)
+      setPopoverNodeTarget(node)                                
+  }
+
+
+  function handleClose()
+  {
+      setAnchorEl(null)
+  }
+
+
+  const [scaledFlag, setScaledFlag] = useState(false)
+
+  function scaleNodeTagsForImage(nodes)
+  {      
+      if(!scaledFlag)
+      {            
+          const temp = nodes.map(node =>{                                  
+              node.coordinates.x = (parseFloat(node.coordinates.x) * (256/20)) + 256
+              node.coordinates.y = (parseFloat(node.coordinates.y) * (256/20) * -1) + 256            
+              return node
+          })        
+          // console.log(temp)
+          if(temp.length > 0)
+              setScaledFlag(true)
+          return temp
+      }
+      else
+      {
+          return nodes
+      }
+  }
+
+
+  // ================== FOR POPUPS ==================
+
   useEffect(() => {
     if (!nodeSequence?.length) {
       setRenderPoints([]);
@@ -192,6 +238,20 @@ export default function MapView({ nodeSequence, initialPosition }) {
   }, [segments, userHeading]);
 
   // Build polyline string for the path
+
+  // Initialise clickable node tags
+  useEffect(() => {
+    if (!nodeTags?.length)
+    {
+      setNodeTagPoints([])
+      return
+    }
+    const scaledNodeTags = scaleNodeTagsForImage(
+      nodeTags
+    )    
+    setNodeTagPoints(scaledNodeTags)
+  }, [])
+
   const pointsString = renderPoints.map((p) => p.join(",")).join(" ");
   const arrowSize = 16;
 
@@ -360,6 +420,98 @@ export default function MapView({ nodeSequence, initialPosition }) {
                         })`}
                       />
                     </g>
+                  </svg>
+                )}
+
+                                
+                <Popover
+                    id={idPopover}
+                    open={openPopover}
+                    anchorEl={anchorEl}
+                    onClose={handleClose}
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'left'
+                    }}
+                >                                              
+                  <Card
+                  sx={{padding:"5px", width:"200px"}}>
+                      <div style={{display:"flex",justifyContent:"space-around"}}>
+                          <Typography> {popoverNodeTarget ? popoverNodeTarget.name.charAt(0).toUpperCase() + popoverNodeTarget.name.slice(1) : ''} </Typography>
+                          <Typography> {popoverNodeTarget ? popoverNodeTarget.number : ''} </Typography>
+                      </div>
+                      <Typography sx={{textAlign:"center"}}> {popoverNodeTarget ? popoverNodeTarget.description : ''} </Typography>
+                  </Card>
+                </Popover>
+                
+                {/* Clickable tags for nodes */}
+                {nodeTagPoints.length > 0 && (                
+                  <svg
+                        key={"nodeTagsSVG"}
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="renderedPath"
+                        width={512}
+                        height={512}
+                    >
+                        {nodeTagPoints.map((node, index) =>
+                    (
+                        <>
+                            <circle
+                                key={node}
+                                cx={node.coordinates.x} cy={node.coordinates.y}
+                                // width={12} height={12}
+                                r={6}
+                                style={{fill:"red", stroke:"blue", opacity:"0.5"}}
+                                onClick={(e) => handleClick(node)(e)}
+                            />                                                                
+                        </>
+                    ))}
+                  </svg>
+                )}
+
+                                
+                <Popover
+                    id={idPopover}
+                    open={openPopover}
+                    anchorEl={anchorEl}
+                    onClose={handleClose}
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'left'
+                    }}
+                >                                              
+                  <Card
+                  sx={{padding:"5px", width:"200px"}}>
+                      <div style={{display:"flex",justifyContent:"space-around"}}>
+                          <Typography> {popoverNodeTarget ? popoverNodeTarget.name.charAt(0).toUpperCase() + popoverNodeTarget.name.slice(1) : ''} </Typography>
+                          <Typography> {popoverNodeTarget ? popoverNodeTarget.number : ''} </Typography>
+                      </div>
+                      <Typography sx={{textAlign:"center"}}> {popoverNodeTarget ? popoverNodeTarget.description : ''} </Typography>
+                  </Card>
+                </Popover>
+                
+                {/* Clickable tags for nodes */}
+                {nodeTagPoints.length > 0 && (                
+                  <svg
+                        key={"nodeTagsSVG"}
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="renderedPath"
+                        width={512}
+                        height={512}
+                    >
+                        {nodeTagPoints.map((node, index) =>
+                    (
+                        <>
+                            <circle
+                                key={node}
+                                cx={node.coordinates.x} cy={node.coordinates.y}
+                                // width={12} height={12}
+                                r={6}
+                                style={{fill:"red", stroke:"blue", opacity:"0.5"}}
+                                onClick={(e) => handleClick(node)(e)}
+                            />                                                                
+                        </>
+                    ))}
                   </svg>
                 )}
 

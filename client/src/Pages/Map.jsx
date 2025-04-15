@@ -1,18 +1,20 @@
 
 import React, { useState } from "react"
-import { Box, Typography } from "@mui/material"
+import { Box, Card, Popover, Typography } from "@mui/material"
 import { useRef, useEffect } from "react"
 import {TransformWrapper, TransformComponent} from "react-zoom-pan-pinch"
 import mapImage from '../../assets/vcc_floor1_grid.png'
 import './Map.css'
 import mapData from '../../testing/bigSampleData.json'
-import traversableData from '../../testing/traversable.json'
+import traversableData from '../../testing/rooms.json'
+import RoomPopup from "./RoomPopup"
 
 const Map = () =>
 {
 
     const [pathCoordinates, setPathCoordinates] = useState([])
-    const [traversableCoordinates, setTraversableCoordinates] = useState([])
+    const [traversableNodes, setTraversableNodes] = useState([])
+
 
 
     useEffect(() => {
@@ -23,10 +25,11 @@ const Map = () =>
         }))
 
 
-        setTraversableCoordinates(traversableData.map(node =>
-        {            
-            return [node.coordinates.x, node.coordinates.y]
+        setTraversableNodes(traversableData.map(node =>
+        {                        
+            return node
         }))
+
         // Output testing
         // console.log(pathCoordinates)
 
@@ -66,23 +69,32 @@ const Map = () =>
             pathToAnimate.style.strokeDasharray = '';
         }
         // ============= ANIMATION =============
-
-
-
+        
     }, [])    
 
 
     // console.log(pathCoordinates)
 
+    const [scaledFlag, setScaledFlag] = useState(false)
+
     function scaleTraversableCoordinatesForImage()
     {      
-        const temp = traversableCoordinates.map(node =>{                      
-            node[0] = (node[0] * (256/20)) + 256
-            node[1] = (node[1] * (256/20) * -1) + 256
-            
-            return node
-        })        
-        return temp
+        if(!scaledFlag)
+        {            
+            const temp = traversableNodes.map(node =>{                                  
+                node.coordinates.x = (parseFloat(node.coordinates.x) * (256/20)) + 256
+                node.coordinates.y = (parseFloat(node.coordinates.y) * (256/20) * -1) + 256            
+                return node
+            })        
+            // console.log(temp)
+            if(temp.length > 0)
+                setScaledFlag(true)
+            return temp
+        }
+        else
+        {
+            return traversableNodes
+        }
     }
 
     function scalePathCoordinatesForImage()
@@ -99,28 +111,32 @@ const Map = () =>
     }
 
     // console.log(scalePathCoordinatesForImage())
-
-    // Animated Line Path Function
-    function animatePath(timestamp)
-    {
-        // const newStep = parseInt((timestamp) / 50) % 
-    }
     
+
+    // ================== FOR POPUPS ==================
+
+    const [anchorEl, setAnchorEl] = useState(null)
+    const [popoverNodeTarget, setPopoverNodeTarget] = useState(null)
+
+    const openPopover = Boolean(anchorEl)
+    const idPopover = openPopover ? 'simple-popover' : undefined
+
+    const handleClick = (node) => (event) =>
+    {                
+        setAnchorEl(event.currentTarget)
+        setPopoverNodeTarget(node)                                
+    }
+
+
+    function handleClose()
+    {
+        setAnchorEl(null)
+    }
+
+    // ================== FOR POPUPS ==================
 
     return (
         <>
-            <Box>
-                {pathCoordinates.map((node, index) => (
-                    <>
-                    <Box key={index}>
-                        <Typography>
-                            {node[0]}
-                            {node[1]}
-                        </Typography>
-                    </Box>
-                    </>
-                ))}                
-            </Box>
             <TransformWrapper>
                 <TransformComponent>
                     <Box 
@@ -153,14 +169,35 @@ const Map = () =>
                 </TransformComponent>
             </TransformWrapper>
             <TransformWrapper>
-                <TransformComponent>
+                <TransformComponent>                    
                     <Box 
                     sx={{
                         backgroundImage: `url(${mapImage})`,
                         backgroundRepeat: "no-repeat",
                         backgroundSize: "512px 512px",                                                
                     }}>
+                        <Popover
+                            id={idPopover}
+                            open={openPopover}
+                            anchorEl={anchorEl}
+                            onClose={handleClose}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'left'
+                            }}
+                        >                                              
+                            <Card
+                            sx={{padding:"5px", width:"200px"}}>
+                                <div style={{display:"flex",justifyContent:"space-around"}}>
+                                    <Typography> {popoverNodeTarget ? popoverNodeTarget.name.charAt(0).toUpperCase() + popoverNodeTarget.name.slice(1) : ''} </Typography>
+                                    <Typography> {popoverNodeTarget ? popoverNodeTarget.number : ''} </Typography>
+                                </div>
+                                <Typography sx={{textAlign:"center"}}> {popoverNodeTarget ? popoverNodeTarget.description : ''} </Typography>
+                            </Card>
+                        </Popover>
+                        
                     <svg
+                            key={"traversableSVG"}
                             xmlns="http://www.w3.org/2000/svg"
                             className="renderedPath"
                             width={512}
@@ -170,11 +207,13 @@ const Map = () =>
                         (
                             <>
                                 <circle
-                                    cx={node[0]} cy={node[1]}
+                                    key={node}
+                                    cx={node.coordinates.x} cy={node.coordinates.y}
                                     // width={12} height={12}
                                     r={6}
                                     style={{fill:"orange", stroke:"blue", opacity:"0.5"}}
-                                />
+                                    onClick={(e) => handleClick(node)(e)}
+                                />                                                                
                             </>
                         ))}
                         </svg>

@@ -15,6 +15,7 @@ import RoomPreferencesIcon from "@mui/icons-material/RoomPreferences";
 import { useNavigate, useLocation } from "react-router-dom";
 import QrScannerModal from "../components/QRScannerModal";
 import MapView from "./MapView";
+import roomNodes from "../utils/rooms.json"
 import { ROOM_COORDINATES } from "../utils/sensorUtils";
 
 export default function NavigationPage() {
@@ -146,7 +147,9 @@ export default function NavigationPage() {
             height: "70vh",
           }}
         >
-          <MapView nodeSequence={nodeSequence} />
+          <MapView nodeSequence={nodeSequence}
+            nodeTags={roomNodes}
+          />
         </Paper>
 
         {scanError && (
