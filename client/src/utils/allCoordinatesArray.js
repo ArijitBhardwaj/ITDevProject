@@ -1722,7 +1722,6 @@ export default [
       x: 6.23,
       y: -11.97,
     },
-    type: "room",
   },
   {
     id: "228",
@@ -1730,7 +1729,6 @@ export default [
       x: 4.3,
       y: -12.03,
     },
-    type: "room",
   },
   {
     id: "228A",
@@ -1738,7 +1736,6 @@ export default [
       x: 3.52,
       y: -11.82,
     },
-    type: "room",
   },
   {
     id: "227",
@@ -1746,7 +1743,6 @@ export default [
       x: 2.97,
       y: -12.03,
     },
-    type: "room",
   },
   {
     id: "236B",
@@ -1754,7 +1750,6 @@ export default [
       x: 8.31,
       y: -11.87,
     },
-    type: "room",
   },
   {
     id: "224C",
@@ -1762,7 +1757,6 @@ export default [
       x: 0.32,
       y: -11.72,
     },
-    type: "room",
   },
   {
     id: "259",
@@ -1770,7 +1764,6 @@ export default [
       x: -4.41,
       y: -11.92,
     },
-    type: "room",
   },
   {
     id: "236",
@@ -1778,7 +1771,6 @@ export default [
       x: 8.14,
       y: -10.96,
     },
-    type: "room",
   },
   {
     id: "226",
@@ -1786,7 +1778,6 @@ export default [
       x: 2.34,
       y: -10.86,
     },
-    type: "room",
   },
   {
     id: "247A",
@@ -1794,7 +1785,6 @@ export default [
       x: -3.55,
       y: -10.23,
     },
-    type: "room",
   },
   {
     id: "236D",
@@ -1802,7 +1792,6 @@ export default [
       x: 6.26,
       y: -10.05,
     },
-    type: "room",
   },
   {
     id: "224G",
@@ -1810,7 +1799,6 @@ export default [
       x: 1.48,
       y: -8.46,
     },
-    type: "room",
   },
   {
     id: "224",
@@ -1818,7 +1806,6 @@ export default [
       x: -1.37,
       y: -9.24,
     },
-    type: "room",
   },
   {
     id: "237A",
@@ -1826,7 +1813,6 @@ export default [
       x: 6.21,
       y: -8.23,
     },
-    type: "room",
   },
   {
     id: "242F",
@@ -1834,7 +1820,6 @@ export default [
       x: 1.48,
       y: -7.85,
     },
-    type: "room",
   },
   {
     id: "242E",
@@ -1842,7 +1827,6 @@ export default [
       x: 1.45,
       y: -7.39,
     },
-    type: "room",
   },
   {
     id: "242D",
@@ -1850,7 +1834,6 @@ export default [
       x: 1.34,
       y: -6.73,
     },
-    type: "room",
   },
   {
     id: "238A",
@@ -1858,7 +1841,6 @@ export default [
       x: 6.21,
       y: -5.9,
     },
-    type: "room",
   },
   {
     id: "239A",
@@ -1866,7 +1848,6 @@ export default [
       x: 6.21,
       y: -4.68,
     },
-    type: "room",
   },
   {
     id: "240",
@@ -1874,7 +1855,6 @@ export default [
       x: 7.12,
       y: -3.95,
     },
-    type: "room",
   },
   {
     id: "253",
@@ -1882,7 +1862,6 @@ export default [
       x: -2.53,
       y: -3.87,
     },
-    type: "room",
   },
   {
     id: "240A",
@@ -1890,7 +1869,6 @@ export default [
       x: 6.21,
       y: -2.84,
     },
-    type: "room",
   },
   {
     id: "242K",
@@ -1898,7 +1876,6 @@ export default [
       x: 5.04,
       y: -2.25,
     },
-    type: "room",
   },
   {
     id: "204H",
@@ -1906,7 +1883,6 @@ export default [
       x: 3.41,
       y: -0.18,
     },
-    type: "room",
   },
   {
     id: "204J",
@@ -1914,7 +1890,6 @@ export default [
       x: 2.34,
       y: -0.33,
     },
-    type: "room",
   },
   {
     id: "204G",
@@ -1922,7 +1897,6 @@ export default [
       x: 4.33,
       y: -0.25,
     },
-    type: "room",
   },
   {
     id: "204",
@@ -1930,7 +1904,6 @@ export default [
       x: 0.65,
       y: -0.25,
     },
-    type: "room",
   },
   {
     id: "201F",
@@ -1938,7 +1911,6 @@ export default [
       x: -3.64,
       y: -0.3,
     },
-    type: "room",
   },
   {
     id: "203i",
@@ -1946,7 +1918,6 @@ export default [
       x: 4.91,
       y: 0.53,
     },
-    type: "room",
   },
   {
     id: "203J",
@@ -1954,7 +1925,6 @@ export default [
       x: 4.91,
       y: 1.39,
     },
-    type: "room",
   },
   {
     id: "210",
@@ -1962,7 +1932,6 @@ export default [
       x: 6.29,
       y: 2.2,
     },
-    type: "room",
   },
   {
     id: "203",
@@ -1970,7 +1939,6 @@ export default [
       x: 1.37,
       y: 1.65,
     },
-    type: "room",
   },
   {
     id: "217",
@@ -1978,7 +1946,6 @@ export default [
       x: -6.4,
       y: 1.34,
     },
-    type: "room",
   },
   {
     id: "203F",
@@ -1986,7 +1953,6 @@ export default [
       x: 4.91,
       y: 1.92,
     },
-    type: "room",
   },
   {
     id: "201A",
@@ -1994,7 +1960,6 @@ export default [
       x: -0.95,
       y: 2.81,
     },
-    type: "room",
   },
   {
     id: "201",
@@ -2002,7 +1967,6 @@ export default [
       x: -4.35,
       y: 2.23,
     },
-    type: "room",
   },
   {
     id: "209",
@@ -2010,7 +1974,6 @@ export default [
       x: -0.65,
       y: 4.91,
     },
-    type: "room",
   },
   {
     id: "216",
@@ -2018,7 +1981,6 @@ export default [
       x: -6.37,
       y: 3.95,
     },
-    type: "room",
   },
   {
     id: "201B",
@@ -2026,7 +1988,6 @@ export default [
       x: -0.95,
       y: 4.28,
     },
-    type: "room",
   },
   {
     id: "208",
@@ -2034,7 +1995,6 @@ export default [
       x: 6.29,
       y: 4.89,
     },
-    type: "room",
   },
   {
     id: "201E",
@@ -2042,7 +2002,6 @@ export default [
       x: -0.65,
       y: 4.91,
     },
-    type: "room",
   },
   {
     id: "215",
@@ -2050,7 +2009,6 @@ export default [
       x: -6.37,
       y: 4.91,
     },
-    type: "room",
   },
   {
     id: "207",
@@ -2058,7 +2016,6 @@ export default [
       x: 6.34,
       y: 5.95,
     },
-    type: "room",
   },
   {
     id: "219",
@@ -2066,7 +2023,6 @@ export default [
       x: -4.33,
       y: 6.66,
     },
-    type: "room",
   },
   {
     id: "214",
@@ -2074,7 +2030,6 @@ export default [
       x: -5.76,
       y: 6.73,
     },
-    type: "room",
   },
   {
     id: "201D",
@@ -2082,7 +2037,6 @@ export default [
       x: -0.7,
       y: 7.47,
     },
-    type: "room",
   },
   {
     id: "206A",
@@ -2090,7 +2044,6 @@ export default [
       x: 6.32,
       y: 7.59,
     },
-    type: "room",
   },
   {
     id: "202",
@@ -2098,7 +2051,6 @@ export default [
       x: 1.31,
       y: 7.54,
     },
-    type: "room",
   },
   {
     id: "206",
@@ -2106,7 +2058,6 @@ export default [
       x: 6.34,
       y: 8.58,
     },
-    type: "room",
   },
   {
     id: "201G",
@@ -2114,7 +2065,6 @@ export default [
       x: -2.64,
       y: 10.08,
     },
-    type: "room",
   },
   {
     id: "213",
@@ -2122,7 +2072,6 @@ export default [
       x: -5.74,
       y: 9.29,
     },
-    type: "room",
   },
   {
     id: "202H",
@@ -2130,7 +2079,6 @@ export default [
       x: 4.82,
       y: 9.24,
     },
-    type: "room",
   },
   {
     id: "205C",
@@ -2138,7 +2086,6 @@ export default [
       x: 6.54,
       y: 10.2,
     },
-    type: "room",
   },
   {
     id: "202G",
@@ -2146,7 +2093,6 @@ export default [
       x: 4.82,
       y: 9.87,
     },
-    type: "room",
   },
   {
     id: "202F",
@@ -2154,7 +2100,6 @@ export default [
       x: 3.41,
       y: 9.85,
     },
-    type: "room",
   },
   {
     id: "220",
@@ -2162,7 +2107,6 @@ export default [
       x: 4.33,
       y: 10.41,
     },
-    type: "room",
   },
   {
     id: "218B",
@@ -2170,7 +2114,6 @@ export default [
       x: 2.31,
       y: 10.2,
     },
-    type: "room",
   },
   {
     id: "212",
@@ -2178,7 +2121,6 @@ export default [
       x: -6.45,
       y: 11.04,
     },
-    type: "room",
   },
   {
     id: "200S",
@@ -2186,7 +2128,6 @@ export default [
       x: 4.05,
       y: 11.32,
     },
-    type: "room",
   },
   {
     id: "200U",
@@ -2194,7 +2135,6 @@ export default [
       x: 1.48,
       y: 11.29,
     },
-    type: "room",
   },
   {
     id: "205B",
@@ -2202,7 +2142,6 @@ export default [
       x: 6.54,
       y: 11.16,
     },
-    type: "room",
   },
   {
     id: "200T",
@@ -2210,7 +2149,6 @@ export default [
       x: 0.37,
       y: 11.34,
     },
-    type: "room",
   },
   {
     id: "200N",
@@ -2218,7 +2156,6 @@ export default [
       x: -0.68,
       y: 11.27,
     },
-    type: "room",
   },
   {
     id: "200",
@@ -2226,7 +2163,6 @@ export default [
       x: -2.53,
       y: 11.27,
     },
-    type: "room",
   },
   {
     id: "200M",
@@ -2234,7 +2170,6 @@ export default [
       x: -4.35,
       y: 11.67,
     },
-    type: "room",
   },
   {
     id: "205A",
@@ -2242,7 +2177,6 @@ export default [
       x: 6.34,
       y: 12.25,
     },
-    type: "room",
   },
   {
     id: "200R",
@@ -2250,7 +2184,6 @@ export default [
       x: 4.88,
       y: 11.97,
     },
-    type: "room",
   },
   {
     id: "211A",
@@ -2258,6 +2191,5 @@ export default [
       x: -6.4,
       y: 12.61,
     },
-    type: "room",
   },
 ];
