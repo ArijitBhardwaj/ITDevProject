@@ -120,8 +120,7 @@ export default function NavigationPage() {
     navigate("/ongoingnav", {
       state: {
         instructions,
-        nodeSequence,
-        roomNodes,
+        nodeSequence,        
         destination,
         // Pass initialPosition as well
         initialPosition: nodeSequence.length ? nodeSequence[0] : null,

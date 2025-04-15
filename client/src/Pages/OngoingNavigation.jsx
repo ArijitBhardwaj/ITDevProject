@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import MapView from "./MapView";
+import roomNodes from "../utils/rooms.json"
 import { requestSensorPermissions } from "../utils/sensorPermissions";
 
 /**
@@ -64,7 +65,7 @@ export default function OngoingNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { instructions, nodeSequence, roomNodes, destination, initialPosition } =
+  const { instructions, nodeSequence, destination, initialPosition } =
     location.state || {};
 
   const [subsections, setSubsections] = useState([]);
