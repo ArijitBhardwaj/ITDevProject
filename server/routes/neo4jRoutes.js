@@ -11,7 +11,7 @@ const express = require("express");
 const router = express.Router();
 const neo4j = require("neo4j-driver");
 
-// Create driver with encryption off for local dev
+// Create driver (for Aura, encryption is on by default)
 const driver = neo4j.driver(
   "neo4j+s://0bd9eb92.databases.neo4j.io",
   neo4j.auth.basic("neo4j", "si5lTkftMBNyESFG-hGczn5QThMCdNYml_E2WO9PjEk")
@@ -27,7 +27,6 @@ function computeDistanceAndDirection(ax, ay, bx, by) {
   const dist = Math.sqrt(dx * dx + dy * dy);
 
   // naive angle-based direction
-  // We convert angle to compass-like text: N,S,E,W, NE, NW, etc.
   const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI; // -180..180
   const dirText = angleToCardinal(angleDeg);
 
@@ -36,10 +35,7 @@ function computeDistanceAndDirection(ax, ay, bx, by) {
 
 /** Convert angle (degrees, -180..180) to a rough cardinal/intercardinal string */
 function angleToCardinal(angleDeg) {
-  // normalize to 0..360
   let a = (angleDeg + 360) % 360;
-  // define each segment of 45 deg
-  //    0=E, 45=NE, 90=N, 135=NW, 180=W, 225=SW, 270=S, 315=SE
   if (a >= 337.5 || a < 22.5) return "east";
   if (a < 67.5) return "northeast";
   if (a < 112.5) return "north";
@@ -51,20 +47,8 @@ function angleToCardinal(angleDeg) {
 }
 
 /**
- *
- * We'll call:
- *   POST /api/neo4j/calc-path
- *   with JSON {startId, endId}
- *
- * Steps:
- *   1) find closest "G" node to startId => traversableStart
- *   2) find closest "G" node to endId => traversableEnd
- *   3) run aStar from traversableStart->traversableEnd
- *   4) build final instructions:
- *       - one step from startId->traversableStart
- *       - the aStar path steps
- *       - one step from traversableEnd->endId
- *     and final nodeSequence with start + path + end
+ * POST /api/neo4j/calc-path
+ * Input: { startId, endId }
  */
 router.post("/calc-path", async (req, res) => {
   const { startId, endId } = req.body;
@@ -75,9 +59,11 @@ router.post("/calc-path", async (req, res) => {
   const session = driver.session();
 
   try {
-    // 1) find Node {id:startId}, Node {id:endId},
-    //    find closest "G" node to each
-    //    then run aStar between those "G" nodes
+    /**
+     * 1) find Node {id:startId}, Node {id:endId}
+     * 2) find closest 'G' node to each
+     * 3) run aStar from those two 'G' nodes
+     */
     const query = `
       MATCH (startNode:Node {id:$startId}), (endNode:Node {id:$endId})
 
@@ -86,7 +72,7 @@ router.post("/calc-path", async (req, res) => {
       MATCH (ts:Node)
       WHERE ts.id STARTS WITH 'G'
       WITH startNode, endNode, ts
-      ORDER BY distance(
+      ORDER BY point.distance(
         point({x:startNode.x, y:startNode.y}),
         point({x:ts.x, y:ts.y})
       ) ASC
@@ -97,7 +83,7 @@ router.post("/calc-path", async (req, res) => {
       MATCH (te:Node)
       WHERE te.id STARTS WITH 'G'
       WITH startNode, endNode, traversableStart, te
-      ORDER BY distance(
+      ORDER BY point.distance(
         point({x:endNode.x, y:endNode.y}),
         point({x:te.x, y:te.y})
       ) ASC
@@ -120,7 +106,6 @@ router.post("/calc-path", async (req, res) => {
       return res.status(404).json({ error: "No path found." });
     }
 
-    // from the single record
     const record = result.records[0];
     const astarPath = record.get("path");
     const totalWeight = record.get("weight");
@@ -130,8 +115,7 @@ router.post("/calc-path", async (req, res) => {
     const travStartNode = record.get("traversableStart").properties;
     const travEndNode = record.get("traversableEnd").properties;
 
-    // Build the segments from the aStar path
-    // path.segments => array
+    // Build segments from the aStar path
     const pathSegments = astarPath.segments.map((segment) => {
       const startProps = segment.start.properties;
       const endProps = segment.end.properties;
@@ -154,32 +138,29 @@ router.post("/calc-path", async (req, res) => {
       };
     });
 
-    // 2) Build nodeSequence from travStart->travEnd path
+    // Build the array of traversable nodes from the aStar path
     const nodeSequence = [];
-    // First node in aStar path
     nodeSequence.push({
       id: pathSegments[0].from.id,
       x: pathSegments[0].from.x,
       y: pathSegments[0].from.y,
       type: pathSegments[0].from.type,
     });
-    for (let seg of pathSegments) {
+    pathSegments.forEach((seg) => {
       nodeSequence.push({
         id: seg.to.id,
         x: seg.to.x,
         y: seg.to.y,
         type: seg.to.type,
       });
-    }
+    });
 
-    // 3) Build instructions for aStar portion
+    // Build instructions for the aStar portion
     const aStarInstructions = [];
     aStarInstructions.push(`(A*) Start at ${pathSegments[0].from.id}`);
     pathSegments.forEach((seg) => {
-      // if seg.direction is stored in DB, we can use it:
       let useDir = seg.direction;
       let useDist = seg.distance;
-      // If direction is not stored, we can compute from seg.from.x,y -> seg.to.x,y
       if (!useDir) {
         const c = computeDistanceAndDirection(
           seg.from.x,
@@ -198,12 +179,10 @@ router.post("/calc-path", async (req, res) => {
       `(A*) Arrived at ${pathSegments[pathSegments.length - 1].to.id}`
     );
 
-    // 4) Now handle the first step: user startId => traversableStart
-    // If the user startId is different from traversableStart
+    // Step from startId => traversableStart
     let firstStepInstructions = [];
     let extraDistance1 = 0;
     if (neo4jStartNode.id !== travStartNode.id) {
-      // compute direction & distance
       const c = computeDistanceAndDirection(
         parseFloat(neo4jStartNode.x),
         parseFloat(neo4jStartNode.y),
@@ -218,11 +197,10 @@ router.post("/calc-path", async (req, res) => {
       );
     }
 
-    // 5) Now the last step: traversableEnd => user endId
+    // Step from traversableEnd => endId
     let lastStepInstructions = [];
     let extraDistance2 = 0;
     if (neo4jEndNode.id !== travEndNode.id) {
-      // compute direction & distance
       const c2 = computeDistanceAndDirection(
         parseFloat(travEndNode.x),
         parseFloat(travEndNode.y),
@@ -237,32 +215,24 @@ router.post("/calc-path", async (req, res) => {
       );
     }
 
-    // 6) Combine instructions
-    // We'll do:
-    //  - "Start at startId"
-    //  - firstStepInstructions
-    //  - aStarInstructions
-    //  - lastStepInstructions
-    //  - "Arrived at endId"
+    // Combine final instructions
     const finalInstructions = [];
     finalInstructions.push(`Start at ${neo4jStartNode.id}`);
     firstStepInstructions.forEach((instr) => finalInstructions.push(instr));
-    // if we actually used travStart->travEnd path
+
+    // Add the aStar path if it exists
     if (pathSegments.length > 0) {
-      // skip the "(A*) Start at..." from the aStar portion
-      // so we don't confuse the user with multiple "start" instructions
-      // just push the aStar steps except the first line
       for (let i = 1; i < aStarInstructions.length; i++) {
         finalInstructions.push(aStarInstructions[i]);
       }
     }
+
     lastStepInstructions.forEach((instr) => finalInstructions.push(instr));
     finalInstructions.push(`Arrived at ${neo4jEndNode.id}`);
 
-    // 7) Build the final nodeSequence:
-    //   startId => travStart => [any aStar nodes except travStart if repeated] => travEnd => endId
+    // Build the final nodeSequence: startId -> traversableStart -> aStar path -> traversableEnd -> endId
     const finalNodeSequence = [];
-    // Always push the real start first
+    // Add the real start
     finalNodeSequence.push({
       id: neo4jStartNode.id,
       x: parseFloat(neo4jStartNode.x),
@@ -270,7 +240,7 @@ router.post("/calc-path", async (req, res) => {
       type: neo4jStartNode.type || "",
     });
 
-    // If different, add travStart
+    // If different, add traversableStart
     if (neo4jStartNode.id !== travStartNode.id) {
       finalNodeSequence.push({
         id: travStartNode.id,
@@ -280,12 +250,9 @@ router.post("/calc-path", async (req, res) => {
       });
     }
 
-    // Insert the aStar path nodes, skipping the first if it duplicates travStart
+    // Insert the aStar path nodes, skipping the first if it's the same as travStart
     nodeSequence.forEach((nd, idx) => {
-      // skip the first if it's the same as travStart
-      if (idx === 0 && nd.id === travStartNode.id) {
-        return;
-      }
+      if (idx === 0 && nd.id === travStartNode.id) return;
       finalNodeSequence.push({
         id: nd.id,
         x: parseFloat(nd.x),
@@ -294,7 +261,7 @@ router.post("/calc-path", async (req, res) => {
       });
     });
 
-    // If travEnd is different from end, we add end
+    // If travEnd is different from endNode
     if (neo4jEndNode.id !== travEndNode.id) {
       finalNodeSequence.push({
         id: neo4jEndNode.id,
@@ -304,7 +271,7 @@ router.post("/calc-path", async (req, res) => {
       });
     }
 
-    // 8) Summation of total distance
+    // Summation of total distance
     const totalDistance = totalWeight + extraDistance1 + extraDistance2;
 
     return res.json({
