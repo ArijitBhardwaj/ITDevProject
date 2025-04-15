@@ -59,7 +59,7 @@ export default function NavigationPage() {
     "Cafe",
     "Security",
     "STR2F",
-    "ELCA"
+    "ELCA",
   ];
 
   const filteredRooms = dummyRooms.filter((room) =>

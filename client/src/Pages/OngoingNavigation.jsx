@@ -4,28 +4,19 @@ import { useLocation, useNavigate } from "react-router-dom";
 import MapView from "./MapView";
 import { requestSensorPermissions } from "../utils/sensorPermissions";
 
-/**
- * Utility distance function
- */
 function distanceBetween(a, b) {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-/**
- * Extracts a cardinal/intercardinal direction from an instruction string.
- * (e.g. “Walk east for 1.0m ...” => "east")
- */
 function parseDirection(instruction) {
   if (!instruction) return "";
   const lower = instruction.toLowerCase();
-  // Check longer intercardinal directions first:
   if (lower.includes("northwest")) return "northwest";
   if (lower.includes("northeast")) return "northeast";
   if (lower.includes("southwest")) return "southwest";
   if (lower.includes("southeast")) return "southeast";
-  // Then the main cardinal directions:
   if (lower.includes("north")) return "north";
   if (lower.includes("south")) return "south";
   if (lower.includes("east")) return "east";
@@ -33,46 +24,34 @@ function parseDirection(instruction) {
   return "";
 }
 
-/**
- * Splits the route (nodeSequence) + instructions into chunks
- * so that each chunk groups consecutive instructions that share the **same direction**.
- */
 function chunkRoute(nodeSequence, instructions) {
   if (!nodeSequence || nodeSequence.length < 2) {
     return [{ nodes: nodeSequence || [], instructions: instructions || [] }];
   }
 
-  // We'll build subsections by grouping consecutive instructions
-  // with the same parseDirection() result.
   let chunks = [];
-
-  // Start with the first instruction
-  let currentNodes = [nodeSequence[0]];
-  let currentInstr = [instructions[0]];
   let currentDir = parseDirection(instructions[0]) || "";
+  let startIdx = 0;
 
-  // Loop through the remaining instructions
   for (let i = 1; i < instructions.length; i++) {
     const thisDir = parseDirection(instructions[i]);
-    if (thisDir === currentDir) {
-      // Same direction, so keep adding
-      currentInstr.push(instructions[i]);
-      currentNodes.push(nodeSequence[i]);
-    } else {
-      // Direction changed => finalize the current chunk
+    if (thisDir !== currentDir) {
+      const endIdx = i - 1;
       chunks.push({
-        nodes: [...currentNodes],
-        instructions: [...currentInstr],
+        nodes: nodeSequence.slice(startIdx, endIdx + 2),
+        instructions: instructions.slice(startIdx, endIdx + 1),
       });
-      // Start a new chunk
-      currentNodes = [nodeSequence[i]];
-      currentInstr = [instructions[i]];
       currentDir = thisDir;
+      startIdx = i;
     }
   }
 
-  // Push the final chunk
-  chunks.push({ nodes: currentNodes, instructions: currentInstr });
+  const endIdx = instructions.length - 1;
+  chunks.push({
+    nodes: nodeSequence.slice(startIdx, endIdx + 2),
+    instructions: instructions.slice(startIdx, endIdx + 1),
+  });
+
   return chunks;
 }
 
@@ -80,7 +59,6 @@ export default function OngoingNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // We receive instructions, nodeSequence, destination, and initialPosition
   const { instructions, nodeSequence, destination, initialPosition } =
     location.state || {};
 
@@ -89,12 +67,10 @@ export default function OngoingNavigation() {
   const [sensorEnabled, setSensorEnabled] = useState(false);
 
   useEffect(() => {
-    // If no nodeSequence, redirect back to navigation page
     if (!nodeSequence || nodeSequence.length === 0) {
       navigate("/navigationpage");
       return;
     }
-    // Split the route into direction-based chunks
     const splitted = chunkRoute(nodeSequence, instructions);
     setSubsections(splitted);
     setCurrentIndex(0);
@@ -108,7 +84,6 @@ export default function OngoingNavigation() {
     );
   }
 
-  // The current sub-route
   const sub = subsections[currentIndex];
   const isLast = currentIndex === subsections.length - 1;
 
@@ -156,8 +131,6 @@ export default function OngoingNavigation() {
           overflow: "hidden",
         }}
       >
-        {/* For each subsection, pass sub.nodes to MapView.
-            The user marker will be at sub.nodes[0] if sensor is enabled. */}
         <MapView
           nodeSequence={sub.nodes}
           initialPosition={sensorEnabled ? sub.nodes[0] : null}
