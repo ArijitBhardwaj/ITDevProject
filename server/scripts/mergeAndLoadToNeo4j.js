@@ -67,7 +67,7 @@ pushData(reference, "reference");
 console.log("Total nodes loaded:", allNodes.length);
 
 // 3) Define threshold for adjacency
-const THRESHOLD = 1.1; // adjust based on your grid spacing
+const THRESHOLD = 1.3; // adjust based on your grid spacing
 
 // 4) Function to compute Euclidean distance
 function euclideanDist(a, b) {
