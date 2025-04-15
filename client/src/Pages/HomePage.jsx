@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Button, Container, Typography } from "@mui/material";
-import backgroundImage from "../assets/Final_HomePage_Navigo.png";
+import backgroundImage from "../assets/Final_HomePage_NaviGo.png";
 
 const HomePage = () => {
   const navigate = useNavigate();
