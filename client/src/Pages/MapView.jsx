@@ -175,7 +175,7 @@ export default function MapView({
         node.coordinates.y = parseFloat(node.coordinates.y) * (256 / 20) * -1 + 256;
         return node;
       });      
-      console.log(temp)
+      
       if (temp.length > 0) scaledFlag = true;
       return temp;
     } else {
@@ -256,7 +256,6 @@ export default function MapView({
   // Initialise clickable node tags
   useEffect(() => {
 
-    console.log(nodeTagPoints, nodeTagPointsNotProp)
     if(nodeTagPoints.length > 0)
     {
       return;
