@@ -161,7 +161,7 @@ export default function MapView({
     setAnchorEl(null);
   }
 
-  const [scaledFlag, setScaledFlag] = useState(false);
+  let scaledFlag = false;
 
   function scaleNodeTagsForImage(nodes) {
     if (!scaledFlag) {
@@ -170,9 +170,8 @@ export default function MapView({
         node.coordinates.y =
           parseFloat(node.coordinates.y) * (256 / 20) * -1 + 256;
         return node;
-      });
-      console.log(temp)
-      if (temp.length > 0) setScaledFlag(true);
+      });      
+      if (temp.length > 0) scaledFlag = true;
       return temp;
     } else {
       return nodes;
@@ -261,7 +260,8 @@ export default function MapView({
       return;
     }
 
-    const scaledNodeTags = scaleNodeTagsForImage(roomNodes);
+    let temp = roomNodes
+    const scaledNodeTags = scaleNodeTagsForImage(temp);
     setNodeTagPoints(scaledNodeTags);    
   }, []);
 
