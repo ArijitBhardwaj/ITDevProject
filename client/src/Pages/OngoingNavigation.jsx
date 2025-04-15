@@ -156,6 +156,11 @@ export default function OngoingNavigation() {
     if (!isLast) setCurrentIndex((idx) => idx + 1);
   }
 
+  /** NEW: handle going back to the previous subsection */
+  function handlePrevious() {
+    if (currentIndex > 0) setCurrentIndex((idx) => idx - 1);
+  }
+
   function handleCompleted() {
     navigate("/navigationpage", { state: { destination } });
   }
@@ -206,11 +211,21 @@ export default function OngoingNavigation() {
         <Button variant="outlined" color="error" onClick={handleFeelingLost}>
           Feeling Lost?
         </Button>
+
+        {/* NEW: Show "Previous" button if there's a subsection before the current */}
+        {currentIndex > 0 && (
+          <Button variant="contained" onClick={handlePrevious}>
+            Previous
+          </Button>
+        )}
+
+        {/* Show "Next" if not on the last subsection */}
         {!isLast && (
           <Button variant="contained" onClick={handleNext}>
             Next
           </Button>
         )}
+
         {isLast && (
           <Button variant="contained" color="success" onClick={handleCompleted}>
             Navigation Completed?
