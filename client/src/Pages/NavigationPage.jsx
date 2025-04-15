@@ -50,6 +50,7 @@ export default function NavigationPage() {
     return () => unsubscribe();
   }, [location]);
 
+  // Example dummy rooms
   const dummyRooms = [
     "Room A101",
     "Room B203",
@@ -97,13 +98,15 @@ export default function NavigationPage() {
       setScanError(null);
       setInstructions([]);
       setNodeSequence([]);
+
+      // If you have a known coordinate for currentLocation:
       const startCoords = ROOM_COORDINATES[currentLocation];
       if (!startCoords) {
         throw new Error(`Unknown or unmapped location: ${currentLocation}`);
       }
       setInitialPosition(startCoords);
 
-      // Fetch path data from your server
+      // Example: fetch path from your server
       const res = await fetch(
         "https://itdevprojectbackend.onrender.com/api/neo4j/calc-path",
         {
@@ -134,9 +137,9 @@ export default function NavigationPage() {
     navigate("/ongoingnav", {
       state: {
         instructions,
-        nodeSequence,        
+        nodeSequence,
         destination,
-        // Pass initialPosition as well
+        // The phone's *very first* position on the map:
         initialPosition: nodeSequence.length ? nodeSequence[0] : null,
       },
     });
@@ -188,9 +191,8 @@ export default function NavigationPage() {
             height: "70vh",
           }}
         >
-          <MapView nodeSequence={nodeSequence}
-            // nodeTags={roomNodes}
-          />
+          {/* Show path on map if nodeSequence is loaded */}
+          <MapView nodeSequence={nodeSequence} />
         </Paper>
 
         {scanError && (
@@ -237,7 +239,7 @@ export default function NavigationPage() {
           }}
         />
 
-        <Grid container spacing={2}>
+        <Grid container spacing={2} sx={{ mb: 2 }}>
           {filteredRooms.map((room) => (
             <Grid item xs={6} sm={4} key={room}>
               <Button

@@ -1,18 +1,18 @@
 export async function requestSensorPermissions() {
-    try {
-      // If the device & browser have requestPermission for orientation, do so
-      if (
-        typeof DeviceOrientationEvent !== "undefined" &&
-        typeof DeviceOrientationEvent.requestPermission === "function"
-      ) {
-        const orientationPerm = await DeviceOrientationEvent.requestPermission();
-        return orientationPerm === "granted";
-      }
-  
-      // Otherwise, no special request needed
-      return true;
-    } catch (error) {
-      console.error("Sensor permission error:", error);
-      return false;
+  try {
+    // iOS 13+ requires a direct user request for device orientation data
+    if (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      typeof DeviceOrientationEvent.requestPermission === "function"
+    ) {
+      const orientationPerm = await DeviceOrientationEvent.requestPermission();
+      return orientationPerm === "granted";
     }
+
+    // Otherwise, on most other browsers, no special request is needed
+    return true;
+  } catch (error) {
+    console.error("Sensor permission error:", error);
+    return false;
   }
+}
