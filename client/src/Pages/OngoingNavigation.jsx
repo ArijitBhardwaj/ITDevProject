@@ -14,49 +14,65 @@ function distanceBetween(a, b) {
 }
 
 /**
+ * Extracts a cardinal/intercardinal direction from an instruction string.
+ * (e.g. “Walk east for 1.0m ...” => "east")
+ */
+function parseDirection(instruction) {
+  if (!instruction) return "";
+  const lower = instruction.toLowerCase();
+  // Check longer intercardinal directions first:
+  if (lower.includes("northwest")) return "northwest";
+  if (lower.includes("northeast")) return "northeast";
+  if (lower.includes("southwest")) return "southwest";
+  if (lower.includes("southeast")) return "southeast";
+  // Then the main cardinal directions:
+  if (lower.includes("north")) return "north";
+  if (lower.includes("south")) return "south";
+  if (lower.includes("east")) return "east";
+  if (lower.includes("west")) return "west";
+  return "";
+}
+
+/**
  * Splits the route (nodeSequence) + instructions into chunks
- * so each chunk can be displayed as a 'subsection'.
+ * so that each chunk groups consecutive instructions that share the **same direction**.
  */
 function chunkRoute(nodeSequence, instructions) {
   if (!nodeSequence || nodeSequence.length < 2) {
     return [{ nodes: nodeSequence || [], instructions: instructions || [] }];
   }
+
+  // We'll build subsections by grouping consecutive instructions
+  // with the same parseDirection() result.
   let chunks = [];
+
+  // Start with the first instruction
   let currentNodes = [nodeSequence[0]];
-  let currentInstr = [];
-  let distSoFar = 0;
+  let currentInstr = [instructions[0]];
+  let currentDir = parseDirection(instructions[0]) || "";
 
-  for (let i = 0; i < nodeSequence.length - 1; i++) {
-    const a = nodeSequence[i];
-    const b = nodeSequence[i + 1];
-    const segDist = distanceBetween(a, b);
-
-    currentNodes.push(b);
-    distSoFar += segDist;
-    if (i + 1 < instructions.length) {
-      currentInstr.push(instructions[i + 1]);
-    }
-
-    // Example: create a new chunk every 15 units of path
-    if (distSoFar >= 15) {
+  // Loop through the remaining instructions
+  for (let i = 1; i < instructions.length; i++) {
+    const thisDir = parseDirection(instructions[i]);
+    if (thisDir === currentDir) {
+      // Same direction, so keep adding
+      currentInstr.push(instructions[i]);
+      currentNodes.push(nodeSequence[i]);
+    } else {
+      // Direction changed => finalize the current chunk
       chunks.push({
         nodes: [...currentNodes],
         instructions: [...currentInstr],
       });
-      distSoFar = 0;
-      currentNodes = [b];
-      currentInstr = [];
+      // Start a new chunk
+      currentNodes = [nodeSequence[i]];
+      currentInstr = [instructions[i]];
+      currentDir = thisDir;
     }
   }
 
-  // Add the last chunk if not empty
-  if (currentNodes.length > 1 || chunks.length === 0) {
-    let lastMsg = instructions[instructions.length - 1];
-    if (lastMsg && lastMsg.startsWith("You have arrived")) {
-      currentInstr.push(lastMsg);
-    }
-    chunks.push({ nodes: currentNodes, instructions: currentInstr });
-  }
+  // Push the final chunk
+  chunks.push({ nodes: currentNodes, instructions: currentInstr });
   return chunks;
 }
 
@@ -78,7 +94,7 @@ export default function OngoingNavigation() {
       navigate("/navigationpage");
       return;
     }
-    // Split the route into smaller chunks
+    // Split the route into direction-based chunks
     const splitted = chunkRoute(nodeSequence, instructions);
     setSubsections(splitted);
     setCurrentIndex(0);
