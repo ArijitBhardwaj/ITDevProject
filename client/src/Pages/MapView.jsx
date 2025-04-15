@@ -258,6 +258,7 @@ export default function MapView({
     }
     const scaledNodeTags = scaleNodeTagsForImage(nodeTags);
     setNodeTagPoints(scaledNodeTags);
+    console.log(nodeTagPoints)
   }, []);
 
   const pointsString = renderPoints.map((p) => p.join(",")).join(" ");
