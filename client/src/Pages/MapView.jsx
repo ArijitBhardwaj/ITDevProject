@@ -168,10 +168,10 @@ export default function MapView({
     if (!scaledFlag) {
       let temp = nodes
       temp.map((node) => {
-        if(parseFloat(node.coordinates.x) > 40) return
+        if(parseFloat(node.coordinates.x) > 40) return node
         node.coordinates.x = parseFloat(node.coordinates.x) * (256 / 20) + 256;
 
-        if(parseFloat(node.coordinates.y) > 40) return
+        if(parseFloat(node.coordinates.y) > 40) return node
         node.coordinates.y = parseFloat(node.coordinates.y) * (256 / 20) * -1 + 256;
         return node;
       });      
@@ -260,13 +260,7 @@ export default function MapView({
     if(nodeTagPoints.length > 0)
     {
       return;
-    }
-
-    if(nodeTagPointsNotProp)
-    {
-      setNodeTagPoints(nodeTagPointsNotProp)
-      return
-    }
+    }    
 
     nodeTagPointsNotProp = roomNodes
     const scaledNodeTags = scaleNodeTagsForImage(nodeTagPointsNotProp);
