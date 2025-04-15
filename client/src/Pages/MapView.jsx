@@ -145,7 +145,7 @@ export default function MapView({
 
   // Build path segments, and animate the arrow
   // ================== FOR POPUPS ==================
-  const nodeTagPointsNotProp = roomNodes
+  let nodeTagPointsNotProp = []
   const [nodeTagPoints, setNodeTagPoints] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [popoverNodeTarget, setPopoverNodeTarget] = useState(null);
@@ -254,12 +254,18 @@ export default function MapView({
   // Initialise clickable node tags
   useEffect(() => {
 
-    console.log(nodeTagPoints)
+    console.log(nodeTagPoints, nodeTagPointsNotProp)
     if(nodeTagPoints.length > 0)
     {
       return;
     }
-    
+
+    if(nodeTagPointsNotProp)
+    {
+      setNodeTagPoints(nodeTagPointsNotProp)
+    }
+
+    nodeTagPointsNotProp = roomNodes
     const scaledNodeTags = scaleNodeTagsForImage(nodeTagPointsNotProp);
     setNodeTagPoints(scaledNodeTags);    
   }, []);
