@@ -13,18 +13,22 @@ import {
 const tripCollectionRef = collection(db, "trips");
 
 export const startTrip = async (userId, start, end, distance) => {
-  const tripDoc = await addDoc(tripCollectionRef, {
-    userId,
-    startPoint: start,
-    endPoint: end,
-    startTime: serverTimestamp(),
-    distance,
-    isCompleted: false,
-    endTime: null
-  });
-
-  return tripDoc.id;
-};
+    try {
+      const tripDoc = await addDoc(collection(db, "trips"), {
+        userId,
+        tripStartPoint: start,
+        tripEndPoint: end,
+        tripStartTime: serverTimestamp(),
+        tripDistance: distance,
+        completed: false,
+        tripEndTime: null,
+      });
+      console.log("Trip saved with ID:", tripDoc.id);
+      return tripDoc.id;
+    } catch (error) {
+      console.error("Error saving trip:", error);
+    }
+  };
 
 export const completeTrip = async (tripId) => {
   const tripRef = doc(db, "trips", tripId);

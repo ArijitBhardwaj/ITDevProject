@@ -4,7 +4,7 @@ import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import mapImage from "../assets/vcc_floor1_grid.png";
 import markerImage from "../assets/marker.png"
 import roomNodes from "../utils/rooms.json"
-import { PedestrianDeadReckoning } from "../utils/sensorUtils";
+// import { PedestrianDeadReckoning } from "../utils/sensorUtils";
 
 /**
  * Scales an array of [x,y] waypoints to fit the 512x512 map
