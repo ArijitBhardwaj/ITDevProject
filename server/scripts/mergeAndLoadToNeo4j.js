@@ -27,6 +27,9 @@ const elevator = JSON.parse(
 const washroom = JSON.parse(
   fs.readFileSync(path.join(__dirname, "../maps/washroom.json"), "utf-8")
 );
+const room = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "../maps/room.json"), "utf-8")
+);
 const uniWashroom = JSON.parse(
   fs.readFileSync(
     path.join(__dirname, "../maps/universal_washroom.json"),
@@ -57,13 +60,14 @@ pushData(landmarks, "landmark");
 pushData(stairs, "stairs");
 pushData(elevator, "elevator");
 pushData(washroom, "washroom");
+pushData(room, "room");
 pushData(uniWashroom, "universal_washroom");
 pushData(reference, "reference");
 
 console.log("Total nodes loaded:", allNodes.length);
 
 // 3) Define threshold for adjacency
-const THRESHOLD = 1.5; // adjust based on your grid spacing
+const THRESHOLD = 1.1; // adjust based on your grid spacing
 
 // 4) Function to compute Euclidean distance
 function euclideanDist(a, b) {

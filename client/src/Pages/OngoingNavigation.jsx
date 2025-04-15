@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import MapView from "./MapView";
-// import roomNodes from "../utils/rooms.json"
 import { requestSensorPermissions } from "../utils/sensorPermissions";
 
 /**
@@ -38,7 +37,7 @@ function chunkRoute(nodeSequence, instructions) {
       currentInstr.push(instructions[i + 1]);
     }
 
-    // e.g., create a new chunk every 15 units of path
+    // Example: create a new chunk every 15 units of path
     if (distSoFar >= 15) {
       chunks.push({
         nodes: [...currentNodes],
@@ -65,6 +64,7 @@ export default function OngoingNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // We receive instructions, nodeSequence, destination, and initialPosition
   const { instructions, nodeSequence, destination, initialPosition } =
     location.state || {};
 
@@ -99,9 +99,11 @@ export default function OngoingNavigation() {
   function handleFeelingLost() {
     navigate("/navigationpage", { state: { destination } });
   }
+
   function handleNext() {
     if (!isLast) setCurrentIndex((idx) => idx + 1);
   }
+
   function handleCompleted() {
     navigate("/navigationpage", { state: { destination } });
   }
@@ -138,13 +140,11 @@ export default function OngoingNavigation() {
           overflow: "hidden",
         }}
       >
-        {/* For each subsection, we show a MapView.
-            The user’s starting position is sub.nodes[0]. 
-            Only pass `initialPosition` if sensor is enabled. */}
+        {/* For each subsection, pass sub.nodes to MapView.
+            The user marker will be at sub.nodes[0] if sensor is enabled. */}
         <MapView
           nodeSequence={sub.nodes}
-          // nodeTags={roomNodes}
-          initialPosition={sensorEnabled ? initialPosition : null}
+          initialPosition={sensorEnabled ? sub.nodes[0] : null}
         />
       </Box>
 
