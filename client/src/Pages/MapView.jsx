@@ -91,7 +91,7 @@ function angleBetween(x1, y1, x2, y2) {
 
 export default function MapView({
   nodeSequence,
-  nodeTags,
+  nodeTags = roomNodes,
   initialPosition,
 }) {
   // Path-related states
