@@ -1,0 +1,546 @@
+[
+    {
+        "id": "229",
+        "coordinates": {
+            "x": 6.23,
+            "y": -11.97
+        },
+        "type": "room"
+    },
+    {
+        "id": "228",
+        "coordinates": {
+            "x": 4.3,
+            "y": -12.03
+        },
+        "type": "room"
+    },
+    {
+        "id": "228A",
+        "coordinates": {
+            "x": 3.52,
+            "y": -11.82
+        },
+        "type": "room"
+    },
+    {
+        "id": "227",
+        "coordinates": {
+            "x": 2.97,
+            "y": -12.03
+        },
+        "type": "room"
+    },
+    {
+        "id": "236B",
+        "coordinates": {
+            "x": 8.31,
+            "y": -11.87
+        },
+        "type": "room"
+    },
+    {
+        "id": "224C",
+        "coordinates": {
+            "x": 0.32,
+            "y": -11.72
+        },
+        "type": "room"
+    },
+    {
+        "id": "259",
+        "coordinates": {
+            "x": -4.41,
+            "y": -11.92
+        },
+        "type": "room"
+    },
+    {
+        "id": "236",
+        "coordinates": {
+            "x": 8.14,
+            "y": -10.96
+        },
+        "type": "room"
+    },
+    {
+        "id": "226",
+        "coordinates": {
+            "x": 2.34,
+            "y": -10.86
+        },
+        "type": "room"
+    },
+    {
+        "id": "247A",
+        "coordinates": {
+            "x": -3.55,
+            "y": -10.23
+        },
+        "type": "room"
+    },
+    {
+        "id": "236D",
+        "coordinates": {
+            "x": 6.26,
+            "y": -10.05
+        },
+        "type": "room"
+    },
+    {
+        "id": "224G",
+        "coordinates": {
+            "x": 1.48,
+            "y": -8.46
+        },
+        "type": "room"
+    },
+    {
+        "id": "224",
+        "coordinates": {
+            "x": -1.37,
+            "y": -9.24
+        },
+        "type": "room"
+    },
+    {
+        "id": "237A",
+        "coordinates": {
+            "x": 6.21,
+            "y": -8.23
+        },
+        "type": "room"
+    },
+    {
+        "id": "242F",
+        "coordinates": {
+            "x": 1.48,
+            "y": -7.85
+        },
+        "type": "room"
+    },
+    {
+        "id": "242E",
+        "coordinates": {
+            "x": 1.45,
+            "y": -7.39
+        },
+        "type": "room"
+    },
+    {
+        "id": "242D",
+        "coordinates": {
+            "x": 1.34,
+            "y": -6.73
+        },
+        "type": "room"
+    },
+    {
+        "id": "238A",
+        "coordinates": {
+            "x": 6.21,
+            "y": -5.9
+        },
+        "type": "room"
+    },
+    {
+        "id": "239A",
+        "coordinates": {
+            "x": 6.21,
+            "y": -4.68
+        },
+        "type": "room"
+    },
+    {
+        "id": "240",
+        "coordinates": {
+            "x": 7.12,
+            "y": -3.95
+        },
+        "type": "room"
+    },
+    {
+        "id": "253",
+        "coordinates": {
+            "x": -2.53,
+            "y": -3.87
+        },
+        "type": "room"
+    },
+    {
+        "id": "240A",
+        "coordinates": {
+            "x": 6.21,
+            "y": -2.84
+        },
+        "type": "room"
+    },
+    {
+        "id": "242K",
+        "coordinates": {
+            "x": 5.04,
+            "y": -2.25
+        },
+        "type": "room"
+    },
+    {
+        "id": "204H",
+        "coordinates": {
+            "x": 3.41,
+            "y": -0.18
+        },
+        "type": "room"
+    },
+    {
+        "id": "204J",
+        "coordinates": {
+            "x": 2.34,
+            "y": -0.33
+        },
+        "type": "room"
+    },
+    {
+        "id": "204G",
+        "coordinates": {
+            "x": 4.33,
+            "y": -0.25
+        },
+        "type": "room"
+    },
+    {
+        "id": "204",
+        "coordinates": {
+            "x": 0.65,
+            "y": -0.25
+        },
+        "type": "room"
+    },
+    {
+        "id": "201F",
+        "coordinates": {
+            "x": -3.64,
+            "y": -0.3
+        },
+        "type": "room"
+    },
+    {
+        "id": "203i",
+        "coordinates": {
+            "x": 4.91,
+            "y": 0.53
+        },
+        "type": "room"
+    },
+    {
+        "id": "203J",
+        "coordinates": {
+            "x": 4.91,
+            "y": 1.39
+        },
+        "type": "room"
+    },
+    {
+        "id": "210",
+        "coordinates": {
+            "x": 6.29,
+            "y": 2.2
+        },
+        "type": "room"
+    },
+    {
+        "id": "203",
+        "coordinates": {
+            "x": 1.37,
+            "y": 1.65
+        },
+        "type": "room"
+    },
+    {
+        "id": "217",
+        "coordinates": {
+            "x": -6.4,
+            "y": 1.34
+        },
+        "type": "room"
+    },
+    {
+        "id": "203F",
+        "coordinates": {
+            "x": 4.91,
+            "y": 1.92
+        },
+        "type": "room"
+    },
+    {
+        "id": "201A",
+        "coordinates": {
+            "x": -0.95,
+            "y": 2.81
+        },
+        "type": "room"
+    },
+    {
+        "id": "201",
+        "coordinates": {
+            "x": -4.35,
+            "y": 2.23
+        },
+        "type": "room"
+    },
+    {
+        "id": "209",
+        "coordinates": {
+            "x": -0.65,
+            "y": 4.91
+        },
+        "type": "room"
+    },
+    {
+        "id": "216",
+        "coordinates": {
+            "x": -6.37,
+            "y": 3.95
+        },
+        "type": "room"
+    },
+    {
+        "id": "201B",
+        "coordinates": {
+            "x": -0.95,
+            "y": 4.28
+        },
+        "type": "room"
+    },
+    {
+        "id": "208",
+        "coordinates": {
+            "x": 6.29,
+            "y": 4.89
+        },
+        "type": "room"
+    },
+    {
+        "id": "201E",
+        "coordinates": {
+            "x": -0.65,
+            "y": 4.91
+        },
+        "type": "room"
+    },
+    {
+        "id": "215",
+        "coordinates": {
+            "x": -6.37,
+            "y": 4.91
+        },
+        "type": "room"
+    },
+    {
+        "id": "207",
+        "coordinates": {
+            "x": 6.34,
+            "y": 5.95
+        },
+        "type": "room"
+    },
+    {
+        "id": "219",
+        "coordinates": {
+            "x": -4.33,
+            "y": 6.66
+        },
+        "type": "room"
+    },
+    {
+        "id": "214",
+        "coordinates": {
+            "x": -5.76,
+            "y": 6.73
+        },
+        "type": "room"
+    },
+    {
+        "id": "201D",
+        "coordinates": {
+            "x": -0.7,
+            "y": 7.47
+        },
+        "type": "room"
+    },
+    {
+        "id": "206A",
+        "coordinates": {
+            "x": 6.32,
+            "y": 7.59
+        },
+        "type": "room"
+    },
+    {
+        "id": "202",
+        "coordinates": {
+            "x": 1.31,
+            "y": 7.54
+        },
+        "type": "room"
+    },
+    {
+        "id": "206",
+        "coordinates": {
+            "x": 6.34,
+            "y": 8.58
+        },
+        "type": "room"
+    },
+    {
+        "id": "201G",
+        "coordinates": {
+            "x": -2.64,
+            "y": 10.08
+        },
+        "type": "room"
+    },
+    {
+        "id": "213",
+        "coordinates": {
+            "x": -5.74,
+            "y": 9.29
+        },
+        "type": "room"
+    },
+    {
+        "id": "202H",
+        "coordinates": {
+            "x": 4.82,
+            "y": 9.24
+        },
+        "type": "room"
+    },
+    {
+        "id": "205C",
+        "coordinates": {
+            "x": 6.54,
+            "y": 10.2
+        },
+        "type": "room"
+    },
+    {
+        "id": "202G",
+        "coordinates": {
+            "x": 4.82,
+            "y": 9.87
+        },
+        "type": "room"
+    },
+    {
+        "id": "202F",
+        "coordinates": {
+            "x": 3.41,
+            "y": 9.85
+        },
+        "type": "room"
+    },
+    {
+        "id": "220",
+        "coordinates": {
+            "x": 4.33,
+            "y": 10.41
+        },
+        "type": "room"
+    },
+    {
+        "id": "218B",
+        "coordinates": {
+            "x": 2.31,
+            "y": 10.2
+        },
+        "type": "room"
+    },
+    {
+        "id": "212",
+        "coordinates": {
+            "x": -6.45,
+            "y": 11.04
+        },
+        "type": "room"
+    },
+    {
+        "id": "200S",
+        "coordinates": {
+            "x": 4.05,
+            "y": 11.32
+        },
+        "type": "room"
+    },
+    {
+        "id": "200U",
+        "coordinates": {
+            "x": 1.48,
+            "y": 11.29
+        },
+        "type": "room"
+    },
+    {
+        "id": "205B",
+        "coordinates": {
+            "x": 6.54,
+            "y": 11.16
+        },
+        "type": "room"
+    },
+    {
+        "id": "200T",
+        "coordinates": {
+            "x": 0.37,
+            "y": 11.34
+        },
+        "type": "room"
+    },
+    {
+        "id": "200N",
+        "coordinates": {
+            "x": -0.68,
+            "y": 11.27
+        },
+        "type": "room"
+    },
+    {
+        "id": "200",
+        "coordinates": {
+            "x": -2.53,
+            "y": 11.27
+        },
+        "type": "room"
+    },
+    {
+        "id": "200M",
+        "coordinates": {
+            "x": -4.35,
+            "y": 11.67
+        },
+        "type": "room"
+    },
+    {
+        "id": "205A",
+        "coordinates": {
+            "x": 6.34,
+            "y": 12.25
+        },
+        "type": "room"
+    },
+    {
+        "id": "200R",
+        "coordinates": {
+            "x": 4.88,
+            "y": 11.97
+        },
+        "type": "room"
+    },
+    {
+        "id": "211A",
+        "coordinates": {
+            "x": -6.4,
+            "y": 12.61
+        },
+        "type": "room"
+    }
+]
