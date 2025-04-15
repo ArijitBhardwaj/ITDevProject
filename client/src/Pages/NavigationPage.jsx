@@ -120,6 +120,7 @@ export default function NavigationPage() {
       state: {
         instructions,
         nodeSequence,
+        roomNodes,
         destination,
         initialPosition,
       },

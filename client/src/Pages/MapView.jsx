@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Box, Card, Popover, Typography, GlobalStyles } from "@mui/material";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import mapImage from "../assets/vcc_floor1_grid.png";
+import markerImage from "../assets/marker.png"
 import { PedestrianDeadReckoning } from "../utils/sensorUtils";
 
 function scaleCoordinatesForImage(nodes) {
@@ -332,23 +333,23 @@ export default function MapView({ nodeSequence, nodeTags = [], initialPosition }
                 </Popover>
                 
                 {/* Clickable tags for nodes */}
-                {nodeTagPoints.length > 0 && (                
+                {nodeTagPoints.length > 0 && renderPoints.length <= 0 && (                
                   <svg
                         key={"nodeTagsSVG"}
                         xmlns="http://www.w3.org/2000/svg"
                         className="renderedPath"
                         width={512}
-                        height={512}
+                        height={512}                        
                     >
                         {nodeTagPoints.map((node, index) =>
                     (
                         <>
-                            <circle
+                            <image
                                 key={node}
-                                cx={node.coordinates.x} cy={node.coordinates.y}
-                                // width={12} height={12}
-                                r={6}
-                                style={{fill:"red", stroke:"blue", opacity:"0.5"}}
+                                href={markerImage}
+                                x={node.coordinates.x - 6} y={node.coordinates.y - `1`}
+                                width={12} height={12}                                
+                                style={{opacity:"0.5"}}
                                 onClick={(e) => handleClick(node)(e)}
                             />                                                                
                         </>

@@ -55,7 +55,7 @@ export default function OngoingNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { instructions, nodeSequence, destination, initialPosition } =
+  const { instructions, nodeSequence, roomNodes, destination, initialPosition } =
     location.state || {};
 
   const [subsections, setSubsections] = useState([]);
@@ -127,6 +127,7 @@ export default function OngoingNavigation() {
       >
         <MapView
           nodeSequence={sub.nodes}
+          nodeTags={roomNodes}
           initialPosition={sensorEnabled ? initialPosition : null}
         />
       </Box>
