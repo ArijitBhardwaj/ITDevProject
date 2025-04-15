@@ -1,0 +1,47 @@
+[
+    {
+        "name": "cafe",
+        "number": 20,
+        "description": "Get some food here",
+        "coordinates": {
+            "x": -6.5,
+            "y": -8
+        }
+    },
+    {
+        "name": "security",
+        "number": 10,
+        "description": "A really long description about something that needs to take up a fair bit of space in order to test how the rendering box will turn out",
+        "coordinates": {
+            "x": -1.5,
+            "y": -2.5
+        }
+    },
+    {
+        "name": "library",
+        "number": 2010,
+        "description": "The place where you want to get your books at",
+        "coordinates": {
+            "x": 3,
+            "y": -5
+        }
+    },
+    {
+        "name": "washroom",
+        "number": 0,
+        "description": "A complicated washroom",
+        "coordinates": {
+            "x": 5,
+            "y": -9.5
+        }
+    },
+    {
+        "name": "washroom",
+        "number": 1,
+        "description": "A simple washroom",
+        "coordinates": {
+            "x": 6.7,
+            "y": -1.7
+        }
+    }
+]

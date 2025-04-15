@@ -2,16 +2,22 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import MapView from "./MapView";
-
-// import requestSensorPermissions
+// import roomNodes from "../utils/rooms.json"
 import { requestSensorPermissions } from "../utils/sensorPermissions";
 
+/**
+ * Utility distance function
+ */
 function distanceBetween(a, b) {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   return Math.sqrt(dx * dx + dy * dy);
 }
 
+/**
+ * Splits the route (nodeSequence) + instructions into chunks
+ * so each chunk can be displayed as a 'subsection'.
+ */
 function chunkRoute(nodeSequence, instructions) {
   if (!nodeSequence || nodeSequence.length < 2) {
     return [{ nodes: nodeSequence || [], instructions: instructions || [] }];
@@ -32,6 +38,7 @@ function chunkRoute(nodeSequence, instructions) {
       currentInstr.push(instructions[i + 1]);
     }
 
+    // e.g., create a new chunk every 15 units of path
     if (distSoFar >= 15) {
       chunks.push({
         nodes: [...currentNodes],
@@ -42,7 +49,8 @@ function chunkRoute(nodeSequence, instructions) {
       currentInstr = [];
     }
   }
-  // leftover
+
+  // Add the last chunk if not empty
   if (currentNodes.length > 1 || chunks.length === 0) {
     let lastMsg = instructions[instructions.length - 1];
     if (lastMsg && lastMsg.startsWith("You have arrived")) {
@@ -62,15 +70,15 @@ export default function OngoingNavigation() {
 
   const [subsections, setSubsections] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  // For iOS sensor request
   const [sensorEnabled, setSensorEnabled] = useState(false);
 
   useEffect(() => {
+    // If no nodeSequence, redirect back to navigation page
     if (!nodeSequence || nodeSequence.length === 0) {
       navigate("/navigationpage");
       return;
     }
+    // Split the route into smaller chunks
     const splitted = chunkRoute(nodeSequence, instructions);
     setSubsections(splitted);
     setCurrentIndex(0);
@@ -84,6 +92,7 @@ export default function OngoingNavigation() {
     );
   }
 
+  // The current sub-route
   const sub = subsections[currentIndex];
   const isLast = currentIndex === subsections.length - 1;
 
@@ -111,22 +120,30 @@ export default function OngoingNavigation() {
         Destination: {destination || "(none)"}
       </Typography>
 
-      {/* If sensor not enabled, show a button for iOS user */}
       {!sensorEnabled && (
         <Box sx={{ textAlign: "center", mb: 2 }}>
           <Button variant="outlined" onClick={handleEnableSensors}>
-            Enable Sensors (iOS)
+            Enable Compass (iOS)
           </Button>
         </Box>
       )}
 
-      <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
-        {/* Pass initialPosition => user can see PDR if sensorEnabled is true 
-            You can do (sensorEnabled ? initialPosition : null) if you want 
-            to not even start PDR unless sensors are enabled. 
-        */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          mb: 3,
+          width: "100%",
+          height: "70vh",
+          overflow: "hidden",
+        }}
+      >
+        {/* For each subsection, we show a MapView.
+            The user’s starting position is sub.nodes[0]. 
+            Only pass `initialPosition` if sensor is enabled. */}
         <MapView
           nodeSequence={sub.nodes}
+          // nodeTags={roomNodes}
           initialPosition={sensorEnabled ? initialPosition : null}
         />
       </Box>

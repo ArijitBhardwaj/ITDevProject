@@ -103,12 +103,21 @@ export default function NavigationPage() {
       }
       setInitialPosition(startCoords);
 
-      const res = await fetch("https://itdevprojectbackend.onrender.com/api/neo4j/calc-path", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ startId: currentLocation, endId: destination }),
-      });
-
+      // Fetch path data from your server
+      const res = await fetch(
+        "https://itdevprojectbackend.onrender.com/api/neo4j/calc-path",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            startId: currentLocation,
+            endId: destination,
+          }),
+        }
+      );
+      if (!res.ok) {
+        throw new Error(`HTTP Error: ${res.status}`);
+      }
       const data = await res.json();
       if (data.error || !data.success) {
         throw new Error(data.error || "Path not found or unknown error.");
@@ -125,9 +134,10 @@ export default function NavigationPage() {
     navigate("/ongoingnav", {
       state: {
         instructions,
-        nodeSequence,
+        nodeSequence,        
         destination,
-        initialPosition,
+        // Pass initialPosition as well
+        initialPosition: nodeSequence.length ? nodeSequence[0] : null,
       },
     });
   };
@@ -174,9 +184,13 @@ export default function NavigationPage() {
             bgcolor: "#e0e0e0",
             color: "#777",
             fontWeight: 500,
+            width: "100%",
+            height: "70vh",
           }}
         >
-          <MapView nodeSequence={nodeSequence} />
+          <MapView nodeSequence={nodeSequence}
+            // nodeTags={roomNodes}
+          />
         </Paper>
 
         {scanError && (
@@ -285,7 +299,10 @@ export default function NavigationPage() {
 
         {showScanner && (
           <Box sx={{ mt: 4 }}>
-            <QrScannerModal onScan={handleScan} onClose={() => setShowScanner(false)} />
+            <QrScannerModal
+              onScan={handleScan}
+              onClose={() => setShowScanner(false)}
+            />
           </Box>
         )}
       </Container>
