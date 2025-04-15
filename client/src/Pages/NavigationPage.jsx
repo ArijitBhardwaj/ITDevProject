@@ -89,6 +89,7 @@ export default function NavigationPage() {
       }
       setInitialPosition(startCoords);
 
+      // Fetch path data from your server
       const res = await fetch(
         "https://itdevprojectbackend.onrender.com/api/neo4j/calc-path",
         {
@@ -120,7 +121,8 @@ export default function NavigationPage() {
         instructions,
         nodeSequence,
         destination,
-        initialPosition,
+        // Pass initialPosition as well
+        initialPosition: nodeSequence.length ? nodeSequence[0] : null,
       },
     });
   };
