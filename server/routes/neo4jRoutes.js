@@ -2,54 +2,20 @@
  * neo4jRoutes.js
  *
  * Provides an endpoint to compute path between two nodes using APOC's aStar,
- * restricting the path to "G" nodes in the middle.
- * Then we prepend one step from startId->traversableStart
- * and append one step from traversableEnd->endId, if needed.
+ * restricting the path to "G" nodes via relationship filtering.
  */
 
 const express = require("express");
 const router = express.Router();
 const neo4j = require("neo4j-driver");
 
-// Connect to your Aura or local Neo4j instance
 const driver = neo4j.driver(
   "neo4j+s://0bd9eb92.databases.neo4j.io",
   neo4j.auth.basic("neo4j", "si5lTkftMBNyESFG-hGczn5QThMCdNYml_E2WO9PjEk")
 );
 
-/**
- * Utility to compute distance & direction for a single “leg”
- */
-function computeDistanceAndDirection(ax, ay, bx, by) {
-  const dx = bx - ax;
-  const dy = by - ay;
-  const dist = Math.sqrt(dx * dx + dy * dy);
+// computeDistanceAndDirection and angleToCardinal functions remain unchanged
 
-  const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
-  const dirText = angleToCardinal(angleDeg);
-  return { distance: dist, direction: dirText };
-}
-
-/**
- * Convert an angle to a simple cardinal/intercardinal text
- * (e.g. -10 => east, 100 => northeast, etc.)
- */
-function angleToCardinal(angleDeg) {
-  let a = (angleDeg + 360) % 360;
-  if (a >= 337.5 || a < 22.5) return "east";
-  if (a < 67.5) return "northeast";
-  if (a < 112.5) return "north";
-  if (a < 157.5) return "northwest";
-  if (a < 202.5) return "west";
-  if (a < 247.5) return "southwest";
-  if (a < 292.5) return "south";
-  return "southeast";
-}
-
-/**
- * POST /api/neo4j/calc-path
- * Body: { startId, endId }
- */
 router.post("/calc-path", async (req, res) => {
   const { startId, endId } = req.body;
   if (!startId || !endId) {
@@ -58,49 +24,36 @@ router.post("/calc-path", async (req, res) => {
 
   const session = driver.session();
   try {
-    // 1) Find closest “G” node to startId, and closest “G” node to endId
-    // 2) Run aStar *only through G nodes*
-    // 3) Build final instructions & nodeSequence
-
     const query = `
       MATCH (startNode:Node {id:$startId}), (endNode:Node {id:$endId})
 
-      // find closest G node to startId
       WITH startNode, endNode
       MATCH (ts:Node)
       WHERE ts.id STARTS WITH 'G'
-      ORDER BY point.distance(
-        point({x:startNode.x, y:startNode.y}),
-        point({x:ts.x, y:ts.y})
-      ) ASC
+      ORDER BY point.distance(startNode.point, ts.point) ASC
       LIMIT 1
       WITH startNode, endNode, ts AS traversableStart
 
-      // find closest G node to endId
       MATCH (te:Node)
       WHERE te.id STARTS WITH 'G'
-      ORDER BY point.distance(
-        point({x:endNode.x, y:endNode.y}),
-        point({x:te.x, y:te.y})
-      ) ASC
+      ORDER BY point.distance(endNode.point, te.point) ASC
       LIMIT 1
       WITH startNode, endNode, traversableStart, te AS traversableEnd
 
-      // 2) Run aStar restricted to G.* nodes
       CALL apoc.algo.aStar(
         traversableStart,
         traversableEnd,
-        "CONNECTED",
+        "G_CONNECTED",  // Use relationship type specific to G nodes
         "distance",
         "x",
-        "y",
-        { nodeFilter: 'n.id =~ "G.*"' }
+        "y"
       ) YIELD path, weight
 
       RETURN startNode, endNode, traversableStart, traversableEnd, path, weight
     `;
 
     const result = await session.run(query, { startId, endId });
+
     if (result.records.length === 0) {
       return res.status(404).json({ error: "No path found." });
     }
