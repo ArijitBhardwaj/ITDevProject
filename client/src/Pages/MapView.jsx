@@ -253,11 +253,8 @@ export default function MapView({
 
   // Initialise clickable node tags
   useEffect(() => {
-    if (!nodeTagPointsNotProp?.length) {
-      setNodeTagPoints([]);
-      return;
-    }
 
+    console.log(nodeTagPoints)
     if(nodeTagPoints.length > 0)
     {
       return;
