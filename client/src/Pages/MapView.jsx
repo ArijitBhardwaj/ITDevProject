@@ -26,18 +26,15 @@ function distance2D(x1, y1, x2, y2) {
 
 /**
  * Builds segment objects for each consecutive pair of points
- * Each segment includes a cumulative distance and also stores "phi",
- * which is the angle between this segment vector and the "map north" vector.
+ * Each segment includes a cumulative distance and "phi",
+ * the angle between this segment vector and the "map north" vector.
  */
 function buildSegments(points) {
   let segments = [];
   let cumulative = 0;
 
-  // "Map North" vector example
-  const mapNorthVector = {
-    x: 5.79 - 5.46,
-    y: 6.38 - 7.54,
-  };
+  // Example map north vector
+  const mapNorthVector = { x: 5.79 - 5.46, y: 6.38 - 7.54 };
 
   for (let i = 0; i < points.length - 1; i++) {
     const [x1, y1] = points[i];
@@ -45,15 +42,11 @@ function buildSegments(points) {
     const length = distance2D(x1, y1, x2, y2);
     cumulative += length;
 
-    // Path vector is from this point to the next
     const pathVector = { x: x2 - x1, y: y2 - y1 };
-
-    // Dot/det to find angle between mapNorthVector & pathVector
     const dot =
       mapNorthVector.x * pathVector.x + mapNorthVector.y * pathVector.y;
     const det =
       mapNorthVector.x * pathVector.y - mapNorthVector.y * pathVector.x;
-    // Phi in degrees
     const phi = (Math.atan2(det, dot) * 180) / Math.PI;
 
     segments.push({
@@ -70,8 +63,7 @@ function buildSegments(points) {
 }
 
 /**
- * Returns the point (and angle) at a given distance along the segments
- * (Used for the red arrow path animation)
+ * For the red arrow's path animation, we pick a point at a certain distance along the segments.
  */
 function getPointAtDistance(segments, dist) {
   if (!segments.length) return { x: 0, y: 0, angle: 0 };
@@ -79,14 +71,9 @@ function getPointAtDistance(segments, dist) {
   const total = segments[segments.length - 1].cumulativeDist;
   if (dist >= total) {
     const last = segments[segments.length - 1];
-    // Angle: direction from x1,y1 -> x2,y2
     const angle =
       Math.atan2(last.y2 - last.y1, last.x2 - last.x1) * (180 / Math.PI);
-    return {
-      x: last.x2,
-      y: last.y2,
-      angle,
-    };
+    return { x: last.x2, y: last.y2, angle };
   }
 
   for (let i = 0; i < segments.length; i++) {
@@ -101,25 +88,23 @@ function getPointAtDistance(segments, dist) {
       return { x, y, angle };
     }
   }
-
   return segments[segments.length - 1];
 }
 
 export default function MapView({ nodeSequence, initialPosition }) {
-  // ========== States for path rendering and user orientation ==========
   const [renderPoints, setRenderPoints] = useState([]);
   const [segments, setSegments] = useState([]);
   const [arrowPos, setArrowPos] = useState({ x: 0, y: 0, angle: 0 });
   const animationRef = useRef(null);
 
-  // Compass & user marker states
+  // Compass states
   const [userHeading, setUserHeading] = useState(0);
   const [requiredTurn, setRequiredTurn] = useState({
     degrees: 0,
     direction: "",
   });
 
-  // Convert `initialPosition` into scaled coordinates once
+  // Convert initialPosition => scaled coords
   const userMarker = initialPosition
     ? {
         x: initialPosition.x * (256 / 20) + 256,
@@ -127,7 +112,7 @@ export default function MapView({ nodeSequence, initialPosition }) {
       }
     : { x: 0, y: 0 };
 
-  // ================== POPUP STATES (unchanged) ==================
+  // ========== POPUP STATES & ROOM TAG LOGIC ==========
   const [nodeTagPoints, setNodeTagPoints] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [popoverNodeTarget, setPopoverNodeTarget] = useState(null);
@@ -139,10 +124,7 @@ export default function MapView({ nodeSequence, initialPosition }) {
     setAnchorEl(event.currentTarget);
     setPopoverNodeTarget(node);
   };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const handleClose = () => setAnchorEl(null);
 
   let scaledFlag = false;
   function scaleNodeTagsForImage(nodes) {
@@ -151,7 +133,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
       temp.map((node) => {
         if (parseFloat(node.coordinates.x) > 40) return node;
         node.coordinates.x = parseFloat(node.coordinates.x) * (256 / 20) + 256;
-
         if (parseFloat(node.coordinates.y) > 40) return node;
         node.coordinates.y =
           parseFloat(node.coordinates.y) * (256 / 20) * -1 + 256;
@@ -168,20 +149,20 @@ export default function MapView({ nodeSequence, initialPosition }) {
     if (nodeTagPoints.length > 0) return;
     const scaledNodeTags = scaleNodeTagsForImage(roomNodes);
     setNodeTagPoints(scaledNodeTags);
-  }, [nodeTagPoints, roomNodes]);
+  }, [nodeTagPoints]);
 
-  // ================== Compass Handling ==================
+  // ========== Compass Handling ==========
   useEffect(() => {
     const handleOrientation = (event) => {
       if (typeof event.alpha === "number") {
         const alpha = event.alpha;
         if (segments.length > 0) {
+          // TurnAngle = alpha - phi + gamma
           const phi = segments[0].phi;
           const gamma = VCC_CALIBRATION.mapRotation;
-
           let turnAngle = (alpha - phi + gamma + 360) % 360;
-          let displayAngle;
-          let direction;
+
+          let displayAngle, direction;
           if (turnAngle <= 180) {
             displayAngle = turnAngle;
             direction = "Right";
@@ -189,13 +170,7 @@ export default function MapView({ nodeSequence, initialPosition }) {
             displayAngle = 360 - turnAngle;
             direction = "Left";
           }
-
-          setRequiredTurn({
-            degrees: Math.round(displayAngle),
-            direction: direction,
-          });
-
-          // If you prefer the marker to show *actual phone heading*, use alpha
+          setRequiredTurn({ degrees: Math.round(displayAngle), direction });
           setUserHeading(turnAngle);
         }
       }
@@ -207,7 +182,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
       true
     );
     window.addEventListener("deviceorientation", handleOrientation, true);
-
     return () => {
       window.removeEventListener(
         "deviceorientationabsolute",
@@ -218,7 +192,7 @@ export default function MapView({ nodeSequence, initialPosition }) {
     };
   }, [segments]);
 
-  // ================== Path building & animation ==================
+  // ========== Build path segments & animate arrow ==========
   useEffect(() => {
     if (!nodeSequence?.length) {
       setRenderPoints([]);
@@ -227,7 +201,6 @@ export default function MapView({ nodeSequence, initialPosition }) {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
       return;
     }
-
     const scaled = scaleCoordinatesForImage(
       nodeSequence.map((n) => [n.x, n.y])
     );
@@ -252,7 +225,7 @@ export default function MapView({ nodeSequence, initialPosition }) {
     return () => cancelAnimationFrame(animationRef.current);
   }, [nodeSequence]);
 
-  // ================== Path rendering ==================
+  // ========== Render path & marker ==========
   const pointsString = renderPoints.map((p) => p.join(",")).join(" ");
   const arrowSize = 16;
 
@@ -371,10 +344,7 @@ export default function MapView({ nodeSequence, initialPosition }) {
             </div>
 
             <TransformComponent
-              wrapperStyle={{
-                width: "100%",
-                height: "100%",
-              }}
+              wrapperStyle={{ width: "100%", height: "100%" }}
               contentStyle={{ transition: "transform 0.15s ease-out" }}
             >
               <Box
@@ -422,10 +392,7 @@ export default function MapView({ nodeSequence, initialPosition }) {
                   open={openPopover}
                   anchorEl={anchorEl}
                   onClose={handleClose}
-                  anchorOrigin={{
-                    vertical: "bottom",
-                    horizontal: "left",
-                  }}
+                  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
                 >
                   <Card sx={{ padding: "5px", width: "200px" }}>
                     <div

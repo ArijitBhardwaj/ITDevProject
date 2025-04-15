@@ -134,14 +134,12 @@ export default function NavigationPage() {
 
   // Updated: Save trip in Firestore then navigate to ongoing navigation page.
   const handleStartNavigation = async () => {
-    // Before navigating, save the trip using startTrip
     const firebaseUser = auth.currentUser;
     if (!firebaseUser) {
       setScanError("User not authenticated.");
       return;
     }
     try {
-      // Adjust parameters as needed; here distance is set to 0 if not calculated yet
       const tripId = await startTrip(
         firebaseUser.uid,
         currentLocation,

@@ -5,17 +5,7 @@ import MapView from "./MapView";
 import { requestSensorPermissions } from "../utils/sensorPermissions";
 
 /**
- * Calculates Euclidean distance (not currently used for chunking, but kept for reference).
- */
-function distanceBetween(a, b) {
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-/**
- * Extracts a cardinal/intercardinal direction from an instruction.
- * (e.g. “Walk south ...” => "south", “walk southeast ...” => "southeast")
+ * Extracts direction keywords like "north", "southeast", etc.
  */
 function parseDirection(instruction) {
   if (!instruction) return "";
@@ -49,7 +39,6 @@ function chunkRoute(nodeSequence, instructions) {
     if (thisDir !== currentDir) {
       const endIdx = i - 1;
       chunks.push({
-        // nodes from startIdx..endIdx+1
         nodes: nodeSequence.slice(startIdx, endIdx + 2),
         instructions: instructions.slice(startIdx, endIdx + 1),
       });
@@ -69,38 +58,54 @@ function chunkRoute(nodeSequence, instructions) {
 }
 
 /**
- * If a subsection has only 1 step (2 nodes),
- * we grab an extra node from the next or previous subsection so that the map
- * always has at least 3 points to draw a short line.
+ * Removes the last chunk if it has exactly one step (2 nodes) AND
+ * that instruction indicates arrival (e.g., "You have arrived").
+ * (You said you don't need that final single-step "arrived" subsection.)
+ */
+function removeLastArrivalChunk(chunks) {
+  if (!chunks.length) return chunks;
+  const last = chunks[chunks.length - 1];
+  if (
+    last.nodes.length === 2 && // 1 step
+    last.instructions.length === 1 &&
+    last.instructions[0].toLowerCase().includes("arrived")
+  ) {
+    chunks.pop();
+  }
+  return chunks;
+}
+
+/**
+ * If a subsection has only 1 step => we try to borrow a node
+ * from the next or previous subsection so there's at least 3 points to render on the map.
  */
 function getNodesForMap(subsections, currentIndex) {
   const currentSub = subsections[currentIndex];
-  // If there's at least 2 steps, no need to adjust
   if (currentSub.nodes.length >= 3) {
+    // Already has multiple steps => no change needed
     return currentSub.nodes;
   }
 
-  // Subsection with only 1 step => length = 2
+  // Single-step => length is 2
   let merged = [...currentSub.nodes];
 
-  // Try to borrow a node from the next subsection if it exists
+  // Try borrowing from the next subsection
   if (currentIndex < subsections.length - 1) {
     const nextSub = subsections[currentIndex + 1];
     if (nextSub.nodes.length >= 2) {
-      // E.g., grab nextSub.nodes[1] so we get a small extension
+      // E.g., we can borrow nextSub.nodes[1]
       merged.push(nextSub.nodes[1]);
       return merged;
     }
   }
 
-  // Otherwise, try to borrow from the previous subsection if it exists
+  // Otherwise, try borrowing from the previous subsection
   if (currentIndex > 0) {
     const prevSub = subsections[currentIndex - 1];
     if (prevSub.nodes.length >= 3) {
-      // For example, we can take the second-to-last node from previous sub
-      // to add some overlap, or just take its final node:
-      const lastNode = prevSub.nodes[prevSub.nodes.length - 2];
-      merged.unshift(lastNode);
+      // Borrow the second-to-last node from the previous sub
+      const borrowedNode = prevSub.nodes[prevSub.nodes.length - 2];
+      merged.unshift(borrowedNode);
     }
   }
 
@@ -111,9 +116,7 @@ export default function OngoingNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // We receive instructions, nodeSequence, destination, and initialPosition
-  const { instructions, nodeSequence, destination, initialPosition } =
-    location.state || {};
+  const { instructions, nodeSequence, destination } = location.state || {};
 
   const [subsections, setSubsections] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -125,13 +128,16 @@ export default function OngoingNavigation() {
       navigate("/navigationpage");
       return;
     }
-    const splitted = chunkRoute(nodeSequence, instructions);
+    // 1) chunk by direction
+    let splitted = chunkRoute(nodeSequence, instructions);
+    // 2) remove last "arrived" single-step chunk if needed
+    splitted = removeLastArrivalChunk(splitted);
     setSubsections(splitted);
     setCurrentIndex(0);
   }, [nodeSequence, instructions, navigate]);
 
-  // If we still have no subsections, show a fallback
   if (!subsections.length) {
+    // Possibly everything got removed if it was only an arrival step
     return (
       <Box sx={{ minHeight: "100vh", p: 2 }}>
         <Typography>Loading route data...</Typography>
@@ -159,7 +165,7 @@ export default function OngoingNavigation() {
     setSensorEnabled(granted);
   }
 
-  // Build the final array of nodes to display on the map
+  // The array of nodes for map rendering
   const mapNodes = getNodesForMap(subsections, currentIndex);
 
   return (
@@ -189,7 +195,7 @@ export default function OngoingNavigation() {
           overflow: "hidden",
         }}
       >
-        {/* Render the adjusted node array, but still use the official "first node" if sensor is enabled */}
+        {/* We pass mapNodes so even single-step subsections show a mini path */}
         <MapView
           nodeSequence={mapNodes}
           initialPosition={sensorEnabled ? mapNodes[0] : null}
