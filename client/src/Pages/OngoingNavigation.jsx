@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import MapView from "./MapView";
-import roomNodes from "../utils/rooms.json"
+// import roomNodes from "../utils/rooms.json"
 import { requestSensorPermissions } from "../utils/sensorPermissions";
 
 /**
@@ -143,7 +143,7 @@ export default function OngoingNavigation() {
             Only pass `initialPosition` if sensor is enabled. */}
         <MapView
           nodeSequence={sub.nodes}
-          nodeTags={roomNodes}
+          // nodeTags={roomNodes}
           initialPosition={sensorEnabled ? initialPosition : null}
         />
       </Box>
