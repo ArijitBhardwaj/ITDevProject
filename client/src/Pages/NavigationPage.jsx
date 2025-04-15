@@ -8,20 +8,25 @@ import {
   InputAdornment,
   Grid,
   Paper,
+  IconButton,
+  Avatar,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import QrCodeScannerIcon from "@mui/icons-material/QrCodeScanner";
 import RoomPreferencesIcon from "@mui/icons-material/RoomPreferences";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useNavigate, useLocation } from "react-router-dom";
+import UserProfilePage from "./UserProfilePage";
 import QrScannerModal from "../components/QRScannerModal";
 import MapView from "./MapView";
-// import roomNodes from "../utils/rooms.json"
+import { auth } from "../firebaseConfig";
 import { ROOM_COORDINATES } from "../utils/sensorUtils";
 
 export default function NavigationPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [currentUserEmail, setCurrentUserEmail] = useState("");
   const [currentLocation, setCurrentLocation] = useState("");
   const [destination, setDestination] = useState("");
   const [showScanner, setShowScanner] = useState(false);
@@ -35,6 +40,14 @@ export default function NavigationPage() {
     if (location.state?.destination) {
       setDestination(location.state.destination);
     }
+
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setCurrentUserEmail(user.email);
+      }
+    });
+
+    return () => unsubscribe();
   }, [location]);
 
   const dummyRooms = [
@@ -48,6 +61,7 @@ export default function NavigationPage() {
     "Lecture Hall 4",
     "Meeting Room",
   ];
+
   const filteredRooms = dummyRooms.filter((room) =>
     room.toLowerCase().includes(destination.toLowerCase())
   );
@@ -83,7 +97,6 @@ export default function NavigationPage() {
       setScanError(null);
       setInstructions([]);
       setNodeSequence([]);
-
       const startCoords = ROOM_COORDINATES[currentLocation];
       if (!startCoords) {
         throw new Error(`Unknown or unmapped location: ${currentLocation}`);
@@ -106,8 +119,9 @@ export default function NavigationPage() {
         throw new Error(`HTTP Error: ${res.status}`);
       }
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      if (!data.success) throw new Error("Path not found or unknown error.");
+      if (data.error || !data.success) {
+        throw new Error(data.error || "Path not found or unknown error.");
+      }
 
       setInstructions(data.instructions || []);
       setNodeSequence(data.nodeSequence || []);
@@ -128,8 +142,35 @@ export default function NavigationPage() {
     });
   };
 
+  const goToProfile = () => {
+    navigate("/userProfilePage");
+  };
+
   return (
     <Box sx={{ minHeight: "100vh", background: "#f8f8f8", p: 2 }}>
+      {/* Top Bar */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 2,
+          px: 2,
+        }}
+      >
+        <Typography variant="h6" color="primary">
+          Navigation Mode 🧭
+        </Typography>
+        <Box display="flex" alignItems="center" gap={1}>
+          <Typography variant="body2">{currentUserEmail}</Typography>
+          <IconButton onClick={goToProfile}>
+            <Avatar>
+              <AccountCircleIcon />
+            </Avatar>
+          </IconButton>
+        </Box>
+      </Box>
+
       <Container maxWidth="sm">
         <Paper
           elevation={2}
@@ -219,6 +260,7 @@ export default function NavigationPage() {
             </Grid>
           ))}
         </Grid>
+
         {filteredRooms.length === 0 && destination && (
           <Typography
             variant="body1"

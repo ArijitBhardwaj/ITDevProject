@@ -5,7 +5,7 @@ import {
 } from "firebase/auth";
 import { useState } from "react";
 import { auth } from "../firebaseConfig";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -23,6 +23,8 @@ import {
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 const SignIn = () => {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -31,37 +33,23 @@ const SignIn = () => {
   const handleSignIn = async (e) => {
     e.preventDefault();
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log("User signed in: ", userCredential.user);
-      setEmail("");
-      setPassword("");
-      setError("");
+      navigate("/userprofilepage");
     } catch (error) {
-      console.error("Error in signing In the user:", error);
+      console.error("Error signing in:", error);
       setError(error.message);
     }
-  };
-
-  const handleClickShowPassword = () => {
-    setShowPassword((prev) => !prev);
-  };
-
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
   };
 
   const handleGoogleSignIn = async () => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      console.log("User signed in with Google:", result.user);
-      setError("");
+      console.log("Google user signed in:", result.user);
+      navigate("/userprofileprofilepage");
     } catch (error) {
-      console.error("Error signing in with Google:", error);
+      console.error("Google sign-in error:", error);
       setError(error.message);
     }
   };
@@ -99,7 +87,6 @@ const SignIn = () => {
               label="Email"
               variant="outlined"
               fullWidth
-              margin="normal"
               required
               type="email"
               value={email}
@@ -110,11 +97,8 @@ const SignIn = () => {
               fullWidth
               sx={{ mt: 2, bgcolor: "#fafafa" }}
             >
-              <InputLabel htmlFor="outlined-adornment-password">
-                Password
-              </InputLabel>
+              <InputLabel>Password</InputLabel>
               <OutlinedInput
-                id="outlined-adornment-password"
                 type={showPassword ? "text" : "password"}
                 required
                 value={password}
@@ -122,12 +106,8 @@ const SignIn = () => {
                 endAdornment={
                   <InputAdornment position="end">
                     <IconButton
-                      onClick={handleClickShowPassword}
-                      onMouseDown={handleMouseDownPassword}
+                      onClick={() => setShowPassword(!showPassword)}
                       edge="end"
-                      aria-label={
-                        showPassword ? "Hide password" : "Show password"
-                      }
                     >
                       {showPassword ? <VisibilityOff /> : <Visibility />}
                     </IconButton>
@@ -145,15 +125,12 @@ const SignIn = () => {
               type="submit"
               variant="contained"
               fullWidth
-              sx={{
-                mt: 3,
-                bgcolor: "#008080",
-                ":hover": { bgcolor: "#006666" },
-              }}
+              sx={{ mt: 3, bgcolor: "#008080", ":hover": { bgcolor: "#006666" } }}
             >
               Sign In
             </Button>
           </Box>
+
           <Typography variant="body2" align="center" sx={{ mt: 2 }}>
             Or sign in with:
           </Typography>
@@ -171,7 +148,7 @@ const SignIn = () => {
             Sign In with Google
           </Button>
           <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-            Don't have an account? <Link to="/signup">Sign Up</Link>
+            Don’t have an account? <Link to="/signup">Sign Up</Link>
           </Typography>
         </CardContent>
       </Card>
