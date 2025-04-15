@@ -90,7 +90,7 @@ function angleBetween(x1, y1, x2, y2) {
 
 export default function MapView({
   nodeSequence,
-  nodeTags = [],
+  nodeTags,
   initialPosition,
 }) {
   // Path-related states
@@ -485,7 +485,7 @@ export default function MapView({
                                 href={markerImage}
                                 x={node.coordinates.x - 6} y={node.coordinates.y - 12}
                                 width={12} height={12}                                
-                                style={{opacity:"0.5"}}
+                                style={{opacity:"0.75"}}
                                 onClick={(e) => handleClick(node)(e)}
                             />                                                                
                         </>
