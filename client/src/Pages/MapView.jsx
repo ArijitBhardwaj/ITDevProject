@@ -171,7 +171,7 @@ export default function MapView({
           parseFloat(node.coordinates.y) * (256 / 20) * -1 + 256;
         return node;
       });
-      
+      console.log(temp)
       if (temp.length > 0) setScaledFlag(true);
       return temp;
     } else {
