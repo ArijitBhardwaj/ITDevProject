@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Box, Card, Popover, Typography, GlobalStyles, Typography } from "@mui/material";
+import { Box, Card, Popover, Typography, GlobalStyles } from "@mui/material";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import mapImage from "../assets/vcc_floor1_grid.png";
 
@@ -86,7 +86,11 @@ function angleBetween(x1, y1, x2, y2) {
   return (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
 }
 
-export default function MapView({ nodeSequence, nodeTags = [], initialPosition }) {
+export default function MapView({
+  nodeSequence,
+  nodeTags = [],
+  initialPosition,
+}) {
   // Path-related states
   const [renderPoints, setRenderPoints] = useState([]);
   const [segments, setSegments] = useState([]);
@@ -95,7 +99,10 @@ export default function MapView({ nodeSequence, nodeTags = [], initialPosition }
 
   // Compass & user marker states
   const [userHeading, setUserHeading] = useState(0); // heading from device's compass
-  const [requiredTurn, setRequiredTurn] = useState({ degrees: 0, direction: "" });
+  const [requiredTurn, setRequiredTurn] = useState({
+    degrees: 0,
+    direction: "",
+  });
 
   // Convert `initialPosition` into scaled coordinates once
   const userMarker = initialPosition
@@ -117,59 +124,58 @@ export default function MapView({ nodeSequence, nodeTags = [], initialPosition }
     };
 
     // 'deviceorientationabsolute' is recommended, but fallback to 'deviceorientation' if needed
-    window.addEventListener("deviceorientationabsolute", handleOrientation, true);
+    window.addEventListener(
+      "deviceorientationabsolute",
+      handleOrientation,
+      true
+    );
     window.addEventListener("deviceorientation", handleOrientation, true);
 
     return () => {
-      window.removeEventListener("deviceorientationabsolute", handleOrientation, true);
+      window.removeEventListener(
+        "deviceorientationabsolute",
+        handleOrientation,
+        true
+      );
       window.removeEventListener("deviceorientation", handleOrientation, true);
     };
   }, []);
 
   // Build path segments, and animate the arrow
   // ================== FOR POPUPS ==================
-  const [nodeTagPoints, setNodeTagPoints] = useState([])
-  const [anchorEl, setAnchorEl] = useState(null)
-  const [popoverNodeTarget, setPopoverNodeTarget] = useState(null)
+  const [nodeTagPoints, setNodeTagPoints] = useState([]);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [popoverNodeTarget, setPopoverNodeTarget] = useState(null);
 
-  const openPopover = Boolean(anchorEl)
-  const idPopover = openPopover ? 'simple-popover' : undefined
+  const openPopover = Boolean(anchorEl);
+  const idPopover = openPopover ? "simple-popover" : undefined;
 
-  const handleClick = (node) => (event) =>
-  {                
-      setAnchorEl(event.currentTarget)
-      setPopoverNodeTarget(node)                                
+  const handleClick = (node) => (event) => {
+    setAnchorEl(event.currentTarget);
+    setPopoverNodeTarget(node);
+  };
+
+  function handleClose() {
+    setAnchorEl(null);
   }
 
+  const [scaledFlag, setScaledFlag] = useState(false);
 
-  function handleClose()
-  {
-      setAnchorEl(null)
+  function scaleNodeTagsForImage(nodes) {
+    if (!scaledFlag) {
+      const temp = nodes.map((node) => {
+        node.coordinates.x = parseFloat(node.coordinates.x) * (256 / 20) + 256;
+        node.coordinates.y =
+          parseFloat(node.coordinates.y) * (256 / 20) * -1 + 256;
+        return node;
+      });
+      // console.log(temp)
+      if (temp.length > 0) setScaledFlag(true);
+      return temp;
+    } else {
+      return nodes;
+    }
   }
-
-
-  const [scaledFlag, setScaledFlag] = useState(false)
-
-  function scaleNodeTagsForImage(nodes)
-  {      
-      if(!scaledFlag)
-      {            
-          const temp = nodes.map(node =>{                                  
-              node.coordinates.x = (parseFloat(node.coordinates.x) * (256/20)) + 256
-              node.coordinates.y = (parseFloat(node.coordinates.y) * (256/20) * -1) + 256            
-              return node
-          })        
-          // console.log(temp)
-          if(temp.length > 0)
-              setScaledFlag(true)
-          return temp
-      }
-      else
-      {
-          return nodes
-      }
-  }
-
 
   // ================== FOR POPUPS ==================
 
@@ -183,7 +189,9 @@ export default function MapView({ nodeSequence, nodeTags = [], initialPosition }
     }
 
     // Scale nodeSequence to the map
-    const scaled = scaleCoordinatesForImage(nodeSequence.map((n) => [n.x, n.y]));
+    const scaled = scaleCoordinatesForImage(
+      nodeSequence.map((n) => [n.x, n.y])
+    );
     setRenderPoints(scaled);
 
     // Build segments
@@ -241,16 +249,13 @@ export default function MapView({ nodeSequence, nodeTags = [], initialPosition }
 
   // Initialise clickable node tags
   useEffect(() => {
-    if (!nodeTags?.length)
-    {
-      setNodeTagPoints([])
-      return
+    if (!nodeTags?.length) {
+      setNodeTagPoints([]);
+      return;
     }
-    const scaledNodeTags = scaleNodeTagsForImage(
-      nodeTags
-    )    
-    setNodeTagPoints(scaledNodeTags)
-  }, [])
+    const scaledNodeTags = scaleNodeTagsForImage(nodeTags);
+    setNodeTagPoints(scaledNodeTags);
+  }, []);
 
   const pointsString = renderPoints.map((p) => p.join(",")).join(" ");
   const arrowSize = 16;
@@ -423,94 +428,136 @@ export default function MapView({ nodeSequence, nodeTags = [], initialPosition }
                   </svg>
                 )}
 
-                                
                 <Popover
-                    id={idPopover}
-                    open={openPopover}
-                    anchorEl={anchorEl}
-                    onClose={handleClose}
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'left'
-                    }}
-                >                                              
-                  <Card
-                  sx={{padding:"5px", width:"200px"}}>
-                      <div style={{display:"flex",justifyContent:"space-around"}}>
-                          <Typography> {popoverNodeTarget ? popoverNodeTarget.name.charAt(0).toUpperCase() + popoverNodeTarget.name.slice(1) : ''} </Typography>
-                          <Typography> {popoverNodeTarget ? popoverNodeTarget.number : ''} </Typography>
-                      </div>
-                      <Typography sx={{textAlign:"center"}}> {popoverNodeTarget ? popoverNodeTarget.description : ''} </Typography>
+                  id={idPopover}
+                  open={openPopover}
+                  anchorEl={anchorEl}
+                  onClose={handleClose}
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "left",
+                  }}
+                >
+                  <Card sx={{ padding: "5px", width: "200px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-around",
+                      }}
+                    >
+                      <Typography>
+                        {" "}
+                        {popoverNodeTarget
+                          ? popoverNodeTarget.name.charAt(0).toUpperCase() +
+                            popoverNodeTarget.name.slice(1)
+                          : ""}{" "}
+                      </Typography>
+                      <Typography>
+                        {" "}
+                        {popoverNodeTarget ? popoverNodeTarget.number : ""}{" "}
+                      </Typography>
+                    </div>
+                    <Typography sx={{ textAlign: "center" }}>
+                      {" "}
+                      {popoverNodeTarget
+                        ? popoverNodeTarget.description
+                        : ""}{" "}
+                    </Typography>
                   </Card>
                 </Popover>
-                
+
                 {/* Clickable tags for nodes */}
-                {nodeTagPoints.length > 0 && (                
+                {nodeTagPoints.length > 0 && (
                   <svg
-                        key={"nodeTagsSVG"}
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="renderedPath"
-                        width={512}
-                        height={512}
-                    >
-                        {nodeTagPoints.map((node, index) =>
-                    (
-                        <>
-                            <circle
-                                key={node}
-                                cx={node.coordinates.x} cy={node.coordinates.y}
-                                // width={12} height={12}
-                                r={6}
-                                style={{fill:"red", stroke:"blue", opacity:"0.5"}}
-                                onClick={(e) => handleClick(node)(e)}
-                            />                                                                
-                        </>
+                    key={"nodeTagsSVG"}
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="renderedPath"
+                    width={512}
+                    height={512}
+                  >
+                    {nodeTagPoints.map((node, index) => (
+                      <>
+                        <circle
+                          key={node}
+                          cx={node.coordinates.x}
+                          cy={node.coordinates.y}
+                          // width={12} height={12}
+                          r={6}
+                          style={{
+                            fill: "red",
+                            stroke: "blue",
+                            opacity: "0.5",
+                          }}
+                          onClick={(e) => handleClick(node)(e)}
+                        />
+                      </>
                     ))}
                   </svg>
                 )}
 
-                                
                 <Popover
-                    id={idPopover}
-                    open={openPopover}
-                    anchorEl={anchorEl}
-                    onClose={handleClose}
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'left'
-                    }}
-                >                                              
-                  <Card
-                  sx={{padding:"5px", width:"200px"}}>
-                      <div style={{display:"flex",justifyContent:"space-around"}}>
-                          <Typography> {popoverNodeTarget ? popoverNodeTarget.name.charAt(0).toUpperCase() + popoverNodeTarget.name.slice(1) : ''} </Typography>
-                          <Typography> {popoverNodeTarget ? popoverNodeTarget.number : ''} </Typography>
-                      </div>
-                      <Typography sx={{textAlign:"center"}}> {popoverNodeTarget ? popoverNodeTarget.description : ''} </Typography>
+                  id={idPopover}
+                  open={openPopover}
+                  anchorEl={anchorEl}
+                  onClose={handleClose}
+                  anchorOrigin={{
+                    vertical: "bottom",
+                    horizontal: "left",
+                  }}
+                >
+                  <Card sx={{ padding: "5px", width: "200px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-around",
+                      }}
+                    >
+                      <Typography>
+                        {" "}
+                        {popoverNodeTarget
+                          ? popoverNodeTarget.name.charAt(0).toUpperCase() +
+                            popoverNodeTarget.name.slice(1)
+                          : ""}{" "}
+                      </Typography>
+                      <Typography>
+                        {" "}
+                        {popoverNodeTarget ? popoverNodeTarget.number : ""}{" "}
+                      </Typography>
+                    </div>
+                    <Typography sx={{ textAlign: "center" }}>
+                      {" "}
+                      {popoverNodeTarget
+                        ? popoverNodeTarget.description
+                        : ""}{" "}
+                    </Typography>
                   </Card>
                 </Popover>
-                
+
                 {/* Clickable tags for nodes */}
-                {nodeTagPoints.length > 0 && (                
+                {nodeTagPoints.length > 0 && (
                   <svg
-                        key={"nodeTagsSVG"}
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="renderedPath"
-                        width={512}
-                        height={512}
-                    >
-                        {nodeTagPoints.map((node, index) =>
-                    (
-                        <>
-                            <circle
-                                key={node}
-                                cx={node.coordinates.x} cy={node.coordinates.y}
-                                // width={12} height={12}
-                                r={6}
-                                style={{fill:"red", stroke:"blue", opacity:"0.5"}}
-                                onClick={(e) => handleClick(node)(e)}
-                            />                                                                
-                        </>
+                    key={"nodeTagsSVG"}
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="renderedPath"
+                    width={512}
+                    height={512}
+                  >
+                    {nodeTagPoints.map((node, index) => (
+                      <>
+                        <circle
+                          key={node}
+                          cx={node.coordinates.x}
+                          cy={node.coordinates.y}
+                          // width={12} height={12}
+                          r={6}
+                          style={{
+                            fill: "red",
+                            stroke: "blue",
+                            opacity: "0.5",
+                          }}
+                          onClick={(e) => handleClick(node)(e)}
+                        />
+                      </>
                     ))}
                   </svg>
                 )}
