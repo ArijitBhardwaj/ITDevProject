@@ -348,7 +348,7 @@ export default function MapView({ nodeSequence, nodeTags = [], initialPosition }
                                 cx={node.coordinates.x} cy={node.coordinates.y}
                                 // width={12} height={12}
                                 r={6}
-                                style={{fill:"orange", stroke:"blue", opacity:"0.5"}}
+                                style={{fill:"red", stroke:"blue", opacity:"0.5"}}
                                 onClick={(e) => handleClick(node)(e)}
                             />                                                                
                         </>
