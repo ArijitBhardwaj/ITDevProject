@@ -54,15 +54,12 @@ export default function NavigationPage() {
 
   // Example dummy rooms
   const dummyRooms = [
-    "Room A101",
-    "Room B203",
-    "Room C301",
-    "Room D410",
-    "Room G338",
-    "Washroom 219A",
-    "Security Office",
-    "Lecture Hall 4",
-    "Meeting Room",
+    "Library",
+    "Entrance",
+    "Cafe",
+    "Security",
+    "STR2F",
+    "ELCA"
   ];
 
   const filteredRooms = dummyRooms.filter((room) =>
