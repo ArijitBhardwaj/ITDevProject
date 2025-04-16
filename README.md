@@ -20,7 +20,14 @@
 * Enhanced subsection rendering by ensuring overlapping nodes in short route chunks and added a "Previous" button in OngoingNavigation for backward navigation.  
 
 
-**Kiranpreet**  
+**Kiranpreet** 
+
+* Implemented Firebase Authentication (login/logout)
+* Integrated Firestore to store and fetch trip data
+* Built responsive User Profile Page with previous trips
+* Connected "Start Trip" button to store trip in Firestore
+* Added UI enhancements with MUI (avatars, buttons, layout)
+* Debugged navigation flow and Firestore data rendering
 
 **Zach**  
 
