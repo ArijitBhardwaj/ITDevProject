@@ -32,8 +32,15 @@
 **Zach**  
 
 **Gursaroop**  
-
-**Gurneet**  
+* Digitized the floorplans of VCC as found publically in colloboration with Gurneet.
+* Standardized the scale, grid size and image to plot the coordinates on.
+* Used Python and pyplot to mark the coordinates on the image.
+* Helped in marking and manually validating coordinates of elements in: elevator.json, landmark.json, reference.json, washroom.json, universal_washroom.json, traversable.json and room.json.
+  
+**Gurneet**
+* Digitized the floorplans of VCC as found publically in colloboration with Gursaroop.
+* Used Python and pyplot to mark the coordinates on the image.
+* Helped in marking and manually validating coordinates of elements in: elevator.json, landmark.json, reference.json, washroom.json, universal_washroom.json, traversable.json and room.json.
 
 **Aiden**  
 * Researched map rendering solutions.  
